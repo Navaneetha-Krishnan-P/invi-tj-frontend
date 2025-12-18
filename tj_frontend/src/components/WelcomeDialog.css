@@ -1,0 +1,275 @@
+/* Welcome Dialog Styles */
+.welcome-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.welcome-dialog {
+  background: linear-gradient(135deg, #122238 0%, #345c90 100%);
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.welcome-header {
+  padding: 24px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.welcome-header h2 {
+  color: white;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+  background: none;
+  -webkit-text-fill-color: white;
+}
+
+.welcome-close {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  font-size: 28px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+}
+
+.welcome-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.welcome-content {
+  padding: 32px 28px;
+}
+
+.welcome-intro {
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0 0 24px 0;
+  text-align: center;
+}
+
+.welcome-features {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  font-size: 14px;
+  color: white;
+  font-weight: 500;
+  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.feature-item:hover {
+  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.15);
+  border-left-color: rgba(255, 255, 255, 0.5);
+}
+
+.feature-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+
+/* Tablet and below */
+@media (max-width: 1024px) {
+  .welcome-dialog {
+    max-width: 450px;
+  }
+}
+
+/* Mobile landscape and below */
+@media (max-width: 768px) {
+  .welcome-dialog {
+    width: 95%;
+    max-width: 420px;
+    margin: 20px;
+  }
+  
+  .welcome-header {
+    padding: 20px 24px;
+  }
+  
+  .welcome-header h2 {
+    font-size: 20px;
+  }
+  
+  .welcome-content {
+    padding: 24px 20px;
+  }
+  
+  .welcome-intro {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  
+  .feature-item {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+  
+  .feature-icon {
+    font-size: 20px;
+  }
+}
+
+/* Mobile portrait */
+@media (max-width: 480px) {
+  .welcome-dialog {
+    width: 95%;
+    margin: 10px;
+    border-radius: 10px;
+  }
+  
+  .welcome-header {
+    padding: 16px 20px;
+  }
+  
+  .welcome-header h2 {
+    font-size: 18px;
+  }
+  
+  .welcome-close {
+    width: 32px;
+    height: 32px;
+    font-size: 24px;
+  }
+  
+  .welcome-content {
+    padding: 20px 16px;
+  }
+  
+  .welcome-intro {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  
+  .welcome-features {
+    gap: 10px;
+  }
+  
+  .feature-item {
+    padding: 10px 14px;
+    font-size: 12px;
+    gap: 10px;
+    border-left-width: 2px;
+  }
+  
+  .feature-icon {
+    font-size: 18px;
+  }
+}
+
+/* Small phones */
+@media (max-width: 360px) {
+  .welcome-dialog {
+    width: 98%;
+    margin: 5px;
+  }
+  
+  .welcome-header {
+    padding: 14px 16px;
+  }
+  
+  .welcome-header h2 {
+    font-size: 16px;
+  }
+  
+  .welcome-close {
+    width: 28px;
+    height: 28px;
+    font-size: 20px;
+  }
+  
+  .welcome-content {
+    padding: 16px 12px;
+  }
+  
+  .welcome-intro {
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+  
+  .feature-item {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+  
+  .feature-icon {
+    font-size: 16px;
+  }
+}
+
+/* Large screens */
+@media (min-width: 1440px) {
+  .welcome-dialog {
+    max-width: 550px;
+  }
+  
+  .welcome-header h2 {
+    font-size: 26px;
+  }
+  
+  .welcome-intro {
+    font-size: 16px;
+  }
+  
+  .feature-item {
+    font-size: 15px;
+  }
+}

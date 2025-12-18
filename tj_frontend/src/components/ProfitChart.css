@@ -1,0 +1,57 @@
+.profit-chart-container {
+  width: 100%;
+  position: relative;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.profit-chart-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.chart-empty p {
+  margin: 0;
+}
+
+/* Tablet Responsive */
+@media (max-width: 1024px) {
+  .profit-chart-container {
+    padding: 8px;
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .profit-chart-container {
+    padding: 6px;
+    border-radius: 6px;
+  }
+
+  .chart-empty {
+    font-size: 12px;
+    height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profit-chart-container {
+    padding: 4px;
+  }
+
+  .chart-empty {
+    font-size: 11px;
+    height: 200px;
+  }
+}
