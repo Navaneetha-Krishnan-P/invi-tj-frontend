@@ -27,7 +27,7 @@ import {
 import './Login.css';
 
 const Login = () => {
-  const [mode, setMode] = useState('login'); // 'login', 'signup', 'forgot-password', 'reset-password'
+  const [mode, setMode] = useState('login'); // 'login', 'signup'
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -37,9 +37,7 @@ const Login = () => {
     name: '',
     email: '',
     phone: '',
-    password: '',
-    newPassword: '',
-    resetToken: ''
+    password: ''
   });
   const { refreshAuth, signIn } = useAuth();
   const navigate = useNavigate();
@@ -118,70 +116,6 @@ const Login = () => {
     }
   };
 
-  const handleForgotPassword = async (e) => {
-    e.preventDefault();
-    if (!formData.email) {
-      setSnackbarMessage('Please enter your email');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-      return;
-    }
-
-    setIsLoading(true);
-    const result = await authService.forgotPassword(formData.email);
-    setIsLoading(false);
-
-    if (result.success) {
-      setSnackbarMessage('Password reset link sent to your email');
-      setSnackbarSeverity('success');
-      setSnackbarOpen(true);
-      setTimeout(() => setMode('login'), 3000);
-    } else {
-      setSnackbarMessage(result.error || 'Failed to send reset link');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-    }
-  };
-
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
-    if (!formData.resetToken || !formData.newPassword) {
-      setSnackbarMessage('Invalid reset link or missing password');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-      return;
-    }
-
-    if (formData.newPassword.length < 6) {
-      setSnackbarMessage('Password must be at least 6 characters');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-      return;
-    }
-
-    setIsLoading(true);
-    const result = await authService.resetPassword(
-      formData.resetToken,
-      formData.newPassword
-    );
-
-    setIsLoading(false);
-
-    if (result.success) {
-      setSnackbarMessage('Password reset successful! Please login.');
-      setSnackbarSeverity('success');
-      setSnackbarOpen(true);
-      setTimeout(() => {
-        setMode('login');
-        setFormData({ ...formData, password: '', resetToken: '', newPassword: '' });
-      }, 2000);
-    } else {
-      setSnackbarMessage(result.error || 'Password reset failed');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-    }
-  };
-
   const switchMode = (newMode) => {
     setMode(newMode);
     setSnackbarOpen(false);
@@ -190,9 +124,7 @@ const Login = () => {
         name: '',
         email: formData.email,
         phone: '',
-        password: '',
-        resetToken: '',
-        newPassword: ''
+        password: ''
       });
     }
   };
@@ -239,8 +171,6 @@ const Login = () => {
           >
             {mode === 'login' && 'WELCOME TO TJ'}
             {mode === 'signup' && 'JOIN US'}
-            {mode === 'forgot-password' && 'RESET'}
-            {mode === 'reset-password' && 'NEW PASSWORD'}
           </Typography>
         </Box>
 
@@ -250,8 +180,6 @@ const Login = () => {
             onSubmit={(e) => {
               if (mode === 'login') handleLogin(e);
               else if (mode === 'signup') handleSignup(e);
-              else if (mode === 'forgot-password') handleForgotPassword(e);
-              else if (mode === 'reset-password') handleResetPassword(e);
             }}
             sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}
           >
@@ -334,8 +262,7 @@ const Login = () => {
               </>
             )}
 
-            {mode !== 'reset-password' && (
-              <TextField
+            <TextField
                 fullWidth
                 label="Email"
                 name="email"
@@ -373,7 +300,7 @@ const Login = () => {
                   }
                 }}
               />
-            )}
+            
 
             {(mode === 'login' || mode === 'signup') && (
               <TextField
@@ -428,87 +355,13 @@ const Login = () => {
               />
             )}
 
-            {mode === 'reset-password' && (
-              <TextField
-                fullWidth
-                label="New Password"
-                name="newPassword"
-                type={showPassword ? 'text' : 'password'}
-                value={formData.newPassword}
-                onChange={handleInputChange}
-                required
-                autoComplete="new-password"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Lock sx={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                        size="small"
-                        sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  )
-                }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    color: 'white',
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                    '& fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.2)',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.3)',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.5)',
-                    }
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: 'rgba(255, 255, 255, 0.7)',
-                  },
-                  '& .MuiInputLabel-root.Mui-focused': {
-                    color: 'rgba(255, 255, 255, 0.9)',
-                  }
-                }}
-              />
-            )}
-
-            {mode === 'login' && (
-              <Box sx={{ textAlign: 'right', mt: -1 }}>
-                <Typography
-                  variant="body2"
-                  onClick={() => switchMode('forgot-password')}
-                  sx={{ 
-                    cursor: 'pointer', 
-                    textDecoration: 'none',
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontWeight: 500,
-                    '&:hover': {
-                      color: 'rgba(255, 255, 255, 0.9)',
-                      textDecoration: 'underline'
-                    }
-                  }}
-                >
-                  Forgot Password?
-                </Typography>
-              </Box>
-            )}
-
             <Button
               type="submit"
               fullWidth
               variant="contained"
               disabled={isLoading}
               sx={{
-                mt: 1,
+                mt: 3,
                 py: 1.5,
                 background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
                 fontSize: '1rem',
@@ -534,8 +387,6 @@ const Login = () => {
                 <>
                   {mode === 'login' && 'Sign In'}
                   {mode === 'signup' && 'Create Account'}
-                  {mode === 'forgot-password' && 'Send Reset Link'}
-                  {mode === 'reset-password' && 'Reset Password'}
                 </>
               )}
             </Button>
@@ -588,27 +439,6 @@ const Login = () => {
                   )}
                 </Box>
               </>
-            )}
-
-            {(mode === 'forgot-password' || mode === 'reset-password') && (
-              <Box sx={{ textAlign: 'center', mt: 2 }}>
-                <Link
-                  component="button"
-                  type="button"
-                  onClick={() => switchMode('login')}
-                  sx={{ 
-                    fontWeight: 600, 
-                    cursor: 'pointer', 
-                    textDecoration: 'none',
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    '&:hover': {
-                      textDecoration: 'underline'
-                    }
-                  }}
-                >
-                  Back to Login
-                </Link>
-              </Box>
             )}
           </Box>
         </CardContent>

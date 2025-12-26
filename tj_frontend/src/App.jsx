@@ -7,7 +7,7 @@ import Dashboard from './screens/Dashboard/Dashboard';
 import ForexMarket from './screens/ForexMarket/ForexMarket';
 import IndianMarket from './screens/IndianMarket/IndianMarket';
 import TradeDetails from './screens/TradeDetails/TradeDetails';
-import Admin from './screens/Admin/Admin';
+import Admin from './screens/Admin';
 import './App.css';
 
 function App() {

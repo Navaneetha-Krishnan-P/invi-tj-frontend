@@ -1,5 +1,6 @@
 // API Configuration
 const API_BASE_URL = 'http://62.84.183.182:5001/api';
+const ADMIN_API_URL = 'http://localhost:5000/api';
 const IMAGE_API_URL = 'http://62.84.183.182:7080';
 
 // API Endpoints
@@ -14,6 +15,10 @@ const ENDPOINTS = {
   TRADES_SAVE: '/trades/save',
   TRADES_ALL: '/trades/all',
   TRADES_DATA: '/trades/data',
+  
+  // Admin
+  USERS_LIST: '/users/list',
+  ADMIN_TRADES_ALL: '/trades/all',
   
   // Image Processing
   IMAGE_DETAILS: '/imgdetails/',
@@ -124,6 +129,60 @@ export const imageAPI = {
   }
 };
 
+// Admin APIs
+export const adminAPI = {
+  getUsers: async () => {
+    const response = await fetch(`${ADMIN_API_URL}${ENDPOINTS.USERS_LIST}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch users');
+    return response.json();
+  },
+
+  getUserById: async (userId) => {
+    const response = await fetch(`${ADMIN_API_URL}/users/${userId}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch user');
+    return response.json();
+  },
+
+  updateUser: async (userId, userData) => {
+    const response = await fetch(`${ADMIN_API_URL}/users/${userId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(userData)
+    });
+    if (!response.ok) throw new Error('Failed to update user');
+    return response.json();
+  },
+
+  updateUserPassword: async (userId, newPassword) => {
+    const response = await fetch(`${ADMIN_API_URL}/users/${userId}/password`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ newPassword })
+    });
+    if (!response.ok) throw new Error('Failed to update password');
+    return response.json();
+  },
+
+  getAllTrades: async (userIds = null) => {
+    let url = `${ADMIN_API_URL}${ENDPOINTS.ADMIN_TRADES_ALL}`;
+    if (userIds && userIds.length > 0) {
+      url += `?userId=${userIds.join(',')}`;
+    }
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to fetch trades');
+    return response.json();
+  }
+};
+
 // Auth APIs (if needed for future use)
 export const authAPI = {
   login: async (email, password) => {
@@ -147,5 +206,6 @@ export default {
   dashboardAPI,
   tradeAPI,
   imageAPI,
-  authAPI
+  authAPI,
+  adminAPI
 };

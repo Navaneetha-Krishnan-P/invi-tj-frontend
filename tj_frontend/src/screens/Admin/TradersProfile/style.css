@@ -1,0 +1,337 @@
+/* Traders Profile - Specific Classes */
+
+/* Profile Section Wrapper */
+.traders-profile-section { 
+  background: rgb(237, 243, 255);
+  padding: 36px 24px 0px 24px;
+  border-radius: 12px;
+  border: 1px solid #e1e8ed;
+  margin: 0;
+}
+
+.traders-profile-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 16px;
+  background: white;
+  border-radius: 12px;
+  margin: 0;
+}
+
+.traders-profile-loading p {
+  color: #666;
+  font-size: 16px;
+}
+
+.traders-profile-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin: 0;
+}
+
+.traders-profile-empty h3 {
+  margin: 20px 0 8px;
+  color: #333;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.traders-profile-empty p {
+  margin: 0;
+  color: #666;
+  font-size: 15px;
+  max-width: 400px;
+}
+
+/* Profile Form Container */
+.profile-form-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Form Sections */
+.form-section {
+  margin-bottom: 32px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.section-header h3 {
+  color: #345c90;
+  font-weight: 600;
+  padding-bottom: 10px;
+}
+
+/* Section Divider */
+.section-divider {
+  height: 1px;
+  background: #e1e8ed;
+  width: 100%;
+  margin: 32px 0;
+}
+
+/* Form Grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+/* Form Fields */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-field label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.form-field input,
+.form-field select,
+.role-select {
+  width: 100%;
+  padding: 16px 20px;
+  border: 1px solid #e1e8ed;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  font-family: inherit;
+  background: #fafbfc;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.role-select:focus {
+  outline: none;
+  border-color: #345c90;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(52, 92, 144, 0.1);
+}
+
+.role-select {
+  cursor: pointer;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Section Button */
+.section-button {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 12px;
+  padding-top: 20px;
+}
+
+/* Info Display */
+.info-display {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 8px;
+  border-left: 4px solid #345c90;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #555;
+  font-size: 14px;
+}
+
+.info-value {
+  font-weight: 500;
+  color: #345c90;
+  font-size: 14px;
+}
+
+/* Form Actions */
+
+/* Confirmation Dialog Styles (Reused from Navbar) */
+.logout-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.logout-confirm-dialog {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  min-width: 320px;
+  max-width: 400px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.logout-confirm-dialog h3 {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.logout-confirm-dialog p {
+  margin: 0 0 24px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.logout-confirm-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.logout-confirm-btn,
+.logout-cancel-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.logout-confirm-btn {
+  background: #e74c3c;
+  color: white;
+}
+
+.logout-confirm-btn:hover {
+  background: #c0392b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+}
+
+.logout-cancel-btn {
+  background: #ecf0f1;
+  color: #333;
+}
+
+.logout-cancel-btn:hover {
+  background: #bdc3c7;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 1024px) {
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .traders-profile-section {
+    padding: 24px;
+  }
+
+  .profile-form-container {
+    max-width: 100%;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .section-header h3 {
+    font-size: 18px;
+  }
+
+  .section-divider {
+    margin: 24px 0;
+  }
+
+  .section-button button {
+    width: 100%;
+    min-width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .traders-profile-section {
+    padding: 16px;
+  }
+
+  .form-section {
+    margin-bottom: 24px;
+  }
+
+  .section-header {
+    margin-bottom: 16px;
+  }
+
+  .section-header h3 {
+    font-size: 16px;
+  }
+
+  .form-field input,
+  .form-field select {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .info-display {
+    padding: 12px;
+  }
+}

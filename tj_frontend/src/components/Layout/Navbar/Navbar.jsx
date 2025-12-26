@@ -88,6 +88,9 @@ const Navbar = ({ onMenuToggle }) => {
                   <div className="profile-info">
                     <h4>{user?.name || 'User'}</h4>
                     <p className="profile-email">{user?.email}</p>
+                    {user?.role_type && (
+                      <p className="profile-role">{user.role_type}</p>
+                    )}
                   </div>
                 </div>
                                 

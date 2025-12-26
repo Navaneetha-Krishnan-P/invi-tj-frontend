@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../../hooks/useAuth.js';
 import './Sidebar.css';
-import { FaChartBar } from "react-icons/fa";
+import { FaChartBar, FaUserShield } from "react-icons/fa";
 import { FaHandHoldingDollar } from "react-icons/fa6";
 import { HiDocumentCurrencyRupee } from "react-icons/hi2";
 import { TbTablePlus } from "react-icons/tb";
@@ -11,7 +11,7 @@ import { TbTablePlus } from "react-icons/tb";
 
 
 const Sidebar = ({ isOpen, onClose }) => {
-  const { isAdmin } = useAuth();
+  const { user, hasRole } = useAuth();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -48,6 +48,17 @@ const Sidebar = ({ isOpen, onClose }) => {
       />
       <aside className={sidebarClass}>
         <nav className="sidebar-nav">
+           {hasRole && hasRole('ADMIN') && (
+            <NavLink 
+              to="/admin" 
+              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              onClick={handleNavClick}
+              style={{ display: 'flex', alignItems: 'center', gap: '15px' }}
+            >
+              <span><FaUserShield size={24} /></span>
+              <span>Admin</span>
+            </NavLink> 
+          )}
           <NavLink 
             to="/dashboard" 
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
@@ -88,17 +99,6 @@ const Sidebar = ({ isOpen, onClose }) => {
             <span>Trade Details</span>
           </NavLink>
           
-          {isAdmin && (
-            <NavLink 
-              to="/admin" 
-              className={({ isActive }) => `nav-item admin-nav ${isActive ? 'active' : ''}`}
-              onClick={handleNavClick}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
-            >
-              <span></span>
-              <span>Admin</span>
-            </NavLink>
-          )}
         </nav>
         <div className="sidebar-footer">
           <small>© {new Date().getFullYear()} Invikings. All rights reserved.</small>

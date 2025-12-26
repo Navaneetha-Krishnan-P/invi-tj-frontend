@@ -51,21 +51,6 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-.sidebar-nav .nav-item.admin-nav {
-  margin-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 30px;
-}
-
-.sidebar-nav .nav-item.admin-nav:hover {
-  border-left-color: #e74c3c;
-}
-
-.sidebar-nav .nav-item.admin-nav.active {
-  background: rgba(231, 76, 60, 0.3);
-  border-left-color: #e74c3c;
-}
-
 .nav-icon {
   font-size: 24px;
 }

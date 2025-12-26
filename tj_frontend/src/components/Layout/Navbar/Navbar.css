@@ -106,6 +106,19 @@
   color: #000;
 }
 
+.profile-role {
+  margin: 6px 0 0 0;
+  font-size: 12px;
+  color: #345c90;
+  font-weight: 600;
+  background: rgba(52, 92, 144, 0.1);
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .menu-toggle {
   cursor: pointer;
   padding: 4px;

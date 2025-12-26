@@ -106,52 +106,6 @@ export const login = async (email, password) => {
   }
 };
 
-// Forgot Password
-export const forgotPassword = async (email) => {
-  try {
-    const response = await fetch(`${API_URL}/forgot-password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to send reset email');
-    }
-
-    return { success: true, data };
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
-};
-
-// Reset Password
-export const resetPassword = async (email, otp, newPassword) => {
-  try {
-    const response = await fetch(`${API_URL}/reset-password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, otp, newPassword }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Password reset failed');
-    }
-
-    return { success: true, data };
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
-};
-
 // Get User Profile
 export const getUserProfile = async () => {
   try {
