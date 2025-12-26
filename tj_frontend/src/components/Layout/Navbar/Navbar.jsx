@@ -1,9 +1,9 @@
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../../hooks/useAuth.js';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import './Navbar.css';
 import { CgProfile } from "react-icons/cg";
-import invikingsLogo from '../../assets/InvikingsPic.png';
+import invikingsLogo from '../../../assets/InvikingsPic.png';
 
 
 const Navbar = ({ onMenuToggle }) => {

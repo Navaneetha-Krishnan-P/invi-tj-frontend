@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { dashboardAPI } from '../../services/api';
 import ProfitChart from '../../components/ProfitChart';
-import BarChart from '../../components/BarChart';
+import BarChart from '../../components/BarChart/BarChart';
 import PieChart from '../../components/PieChart';
 import StockCombinedChart from '../../components/StockCombinedChart';
 import ErrorSnackbar from '../../components/ErrorSnackbar';
 import WelcomeDialog from '../../components/WelcomeDialog';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth.js';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { MdDashboardCustomize } from "react-icons/md";
@@ -28,9 +28,11 @@ const Dashboard = () => {
     tradesByMarket: []
   });
   const [indianProfitData, setIndianProfitData] = useState([]);
-  const [indianProfitPeriod, setIndianProfitPeriod] = useState('all');
+  const [indianProfitPeriod, setIndianProfitPeriod] = useState('days');
   const [forexProfitData, setForexProfitData] = useState([]);
-  const [forexProfitPeriod, setForexProfitPeriod] = useState('all');
+  const [forexProfitPeriod, setForexProfitPeriod] = useState('days');
+  const [indianPieTrades, setIndianPieTrades] = useState([]);
+  const [forexPieTrades, setForexPieTrades] = useState([]);
   const [indianProfitLoading, setIndianProfitLoading] = useState(false);
   const [forexProfitLoading, setForexProfitLoading] = useState(false);
   const [indianChartType, setIndianChartType] = useState('line');
@@ -259,43 +261,190 @@ const Dashboard = () => {
     fetchForexTrades();
   }, [forexTimeFilter]);
 
-  // Fetch Indian profit over time
+  // Fetch Indian profit over time (handled client-side via aggregation)
   useEffect(() => {
-    const fetchIndianProfitData = async () => {
-      try {
-        setIndianProfitLoading(true);
-        const token = localStorage.getItem('authToken');
-        if (!token) return;
-
-        const data = await dashboardAPI.getProfitOverTime(indianProfitPeriod, 'INDIAN', indianProfitPeriod);
-        setIndianProfitData(data.data || []);
-      } catch (err) {
-        console.error('Error fetching Indian profit data:', err);
-      } finally {
-        setIndianProfitLoading(false);
-      }
-    };
-    fetchIndianProfitData();
+    setIndianProfitLoading(false);
   }, [indianProfitPeriod]);
 
-  // Fetch Forex profit over time
+  // Fetch Forex profit over time (handled client-side via aggregation)
   useEffect(() => {
-    const fetchForexProfitData = async () => {
-      try {
-        setForexProfitLoading(true);
-        const token = localStorage.getItem('authToken');
-        if (!token) return;
-
-        const data = await dashboardAPI.getProfitOverTime(forexProfitPeriod, 'FOREX', forexProfitPeriod);
-        setForexProfitData(data.data || []);
-      } catch (err) {
-        console.error('Error fetching Forex profit data:', err);
-      } finally {
-        setForexProfitLoading(false);
-      }
-    };
-    fetchForexProfitData();
+    setForexProfitLoading(false);
   }, [forexProfitPeriod]);
+
+  // Aggregate trades into periods for charts (days/weeks/months/quarters/years)
+  const formatDateKey = (d) => d.toISOString().split('T')[0];
+
+  const aggregateFromTrades = (trades, periodKey) => {
+    // trades: array with trade_date and profit_loss
+    const mapByDate = {};
+    trades.forEach(t => {
+      const key = formatDateKey(new Date(t.trade_date));
+      if (!mapByDate[key]) mapByDate[key] = [];
+      mapByDate[key].push(t);
+    });
+
+    const sumPLForRange = (start, end) => {
+      let sum = 0;
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const k = formatDateKey(new Date(d));
+        if (mapByDate[k]) {
+          sum += mapByDate[k].reduce((s, tr) => s + Number(tr.profit_loss), 0);
+        }
+      }
+      return sum;
+    };
+
+    const out = [];
+    const today = new Date();
+
+    if (periodKey === 'days') {
+      const DAYS = 30;
+      for (let i = DAYS - 1; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - i);
+        const key = formatDateKey(d);
+        const val = mapByDate[key] ? mapByDate[key].reduce((s, tr) => s + Number(tr.profit_loss), 0) : 0;
+        out.push({ period: key, totalProfit: val });
+      }
+    } else if (periodKey === 'weeks') {
+      const WEEKS = 12;
+      // start of this week (Monday)
+      const cur = new Date(today);
+      const day = cur.getDay();
+      const diffToMon = (day + 6) % 7;
+      const startOfThisWeek = new Date(cur);
+      startOfThisWeek.setDate(cur.getDate() - diffToMon);
+      for (let i = WEEKS - 1; i >= 0; i--) {
+        const weekStart = new Date(startOfThisWeek);
+        weekStart.setDate(startOfThisWeek.getDate() - i * 7);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        const val = sumPLForRange(weekStart, weekEnd);
+        out.push({ period: formatDateKey(weekStart), totalProfit: val });
+      }
+    } else if (periodKey === 'months') {
+      const MONTHS = 12;
+      for (let i = MONTHS - 1; i >= 0; i--) {
+        const m = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        const start = new Date(m.getFullYear(), m.getMonth(), 1);
+        const end = new Date(m.getFullYear(), m.getMonth() + 1, 0);
+        const val = sumPLForRange(start, end);
+        out.push({ period: `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}`, totalProfit: val });
+      }
+    } else if (periodKey === 'quarters') {
+      const QUARTERS = 8;
+      const curYear = today.getFullYear();
+      const curQuarter = Math.floor(today.getMonth() / 3) + 1;
+      for (let i = QUARTERS - 1; i >= 0; i--) {
+        const qIndex = (curQuarter - i - 1);
+        const yearOffset = Math.floor(qIndex / 4);
+        const quarter = ((qIndex % 4) + 4) % 4 + 1;
+        const year = curYear + yearOffset;
+        const startMonth = (quarter - 1) * 3;
+        const start = new Date(year, startMonth, 1);
+        const end = new Date(year, startMonth + 3, 0);
+        const val = sumPLForRange(start, end);
+        out.push({ period: `${year}-Q${quarter}`, totalProfit: val });
+      }
+    }
+
+    return out;
+  };
+
+  // Recompute profit arrays and pie-filtered trades when trades or period selection changes
+  useEffect(() => {
+    // indian
+    try {
+      const aggregated = aggregateFromTrades(indianTrades || [], indianProfitPeriod || 'days');
+      setIndianProfitData(aggregated);
+
+      // set pie trades filtered by window
+      if (indianProfitPeriod === 'all') {
+        setIndianPieTrades(indianTrades || []);
+      } else {
+        // compute window start/end based on selected period
+        const today = new Date();
+        let start = new Date();
+        if (indianProfitPeriod === 'days') {
+          const DAYS = 30;
+          start.setDate(today.getDate() - (DAYS - 1));
+        } else if (indianProfitPeriod === 'weeks') {
+          const WEEKS = 12;
+          const day = today.getDay();
+          const diffToMon = (day + 6) % 7;
+          const startOfThisWeek = new Date(today);
+          startOfThisWeek.setDate(today.getDate() - diffToMon);
+          start = new Date(startOfThisWeek);
+          start.setDate(startOfThisWeek.getDate() - (WEEKS - 1) * 7);
+        } else if (indianProfitPeriod === 'months') {
+          const MONTHS = 12;
+          start = new Date(today.getFullYear(), today.getMonth() - (MONTHS - 1), 1);
+        } else if (indianProfitPeriod === 'quarters') {
+          const QUARTERS = 8;
+          const curQuarter = Math.floor(today.getMonth() / 3) + 1;
+          const curYear = today.getFullYear();
+          const startQuarterIndex = curQuarter - (QUARTERS - 1);
+          const startYearOffset = Math.floor((startQuarterIndex - 1) / 4);
+          const startQuarter = ((startQuarterIndex - 1) % 4 + 4) % 4 + 1;
+          const startMonth = (startQuarter - 1) * 3;
+          start = new Date(curYear + startYearOffset, startMonth, 1);
+        }
+        const end = new Date(today);
+        setIndianPieTrades((indianTrades || []).filter(t => {
+          const d = new Date(t.trade_date);
+          return d >= start && d <= end;
+        }));
+      }
+    } catch (err) {
+      console.error('Error aggregating Indian trades:', err);
+    }
+  }, [indianTrades, indianProfitPeriod]);
+
+  useEffect(() => {
+    // forex
+    try {
+      const aggregated = aggregateFromTrades(forexTrades || [], forexProfitPeriod || 'days');
+      setForexProfitData(aggregated);
+
+      if (forexProfitPeriod === 'all') {
+        setForexPieTrades(forexTrades || []);
+      } else {
+        const today = new Date();
+        let start = new Date();
+        if (forexProfitPeriod === 'days') {
+          const DAYS = 30;
+          start.setDate(today.getDate() - (DAYS - 1));
+        } else if (forexProfitPeriod === 'weeks') {
+          const WEEKS = 12;
+          const day = today.getDay();
+          const diffToMon = (day + 6) % 7;
+          const startOfThisWeek = new Date(today);
+          startOfThisWeek.setDate(today.getDate() - diffToMon);
+          start = new Date(startOfThisWeek);
+          start.setDate(startOfThisWeek.getDate() - (WEEKS - 1) * 7);
+        } else if (forexProfitPeriod === 'months') {
+          const MONTHS = 12;
+          start = new Date(today.getFullYear(), today.getMonth() - (MONTHS - 1), 1);
+        } else if (forexProfitPeriod === 'quarters') {
+          const QUARTERS = 8;
+          const curQuarter = Math.floor(today.getMonth() / 3) + 1;
+          const curYear = today.getFullYear();
+          const startQuarterIndex = curQuarter - (QUARTERS - 1);
+          const startYearOffset = Math.floor((startQuarterIndex - 1) / 4);
+          const startQuarter = ((startQuarterIndex - 1) % 4 + 4) % 4 + 1;
+          const startMonth = (startQuarter - 1) * 3;
+          start = new Date(curYear + startYearOffset, startMonth, 1);
+        }
+        const end = new Date(today);
+        setForexPieTrades((forexTrades || []).filter(t => {
+          const d = new Date(t.trade_date);
+          return d >= start && d <= end;
+        }));
+      }
+    } catch (err) {
+      console.error('Error aggregating Forex trades:', err);
+    }
+  }, [forexTrades, forexProfitPeriod]);
 
   // Handle performance capital change with loading
   useEffect(() => {
@@ -792,32 +941,34 @@ const Dashboard = () => {
               Monitor your foreign exchange trading performance over time. Switch between different time periods and chart types to analyze profit patterns, identify trends, and evaluate your forex trading strategy.
             </p>
           </div>
-          <div className="chart-controls">
-            <div className="filter-group">
-              <label>Period:</label>
-              <select 
-                value={forexProfitPeriod} 
-                onChange={(e) => setForexProfitPeriod(e.target.value)}
-                className="filter-select"
-              >
-                <option value="all">All Time</option>
-                <option value="last_week">Last Week</option>
-                <option value="last_month">Last Month</option>
-                <option value="last_3months">Last 3 Months</option>
-                <option value="last_6months">Last 6 Months</option>
-              </select>
-            </div>
-            <div className="filter-group">
-              <label>Chart Type:</label>
-              <select 
-                value={forexChartType} 
-                onChange={(e) => setForexChartType(e.target.value)}
-                className="filter-select"
-              >
-                <option value="line">Line Chart</option>
-                <option value="bar">Bar Chart</option>
-                <option value="pie">Pie Chart</option>
-              </select>
+          <div className="chart-controls" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap'}}>
+            <div style={{flex: '1 1 auto'}} />
+            <div style={{display: 'flex', gap: 12, alignItems: 'center'}}>
+              <div className="filter-group" style={{display: 'flex', alignItems: 'center'}}>
+                <label style={{marginRight: 8}}>Period:</label>
+                <select 
+                  value={forexProfitPeriod} 
+                  onChange={(e) => setForexProfitPeriod(e.target.value)}
+                  className="filter-select"
+                >
+                  <option value="days">Last 30 Days</option>
+                  <option value="weeks">Last 12 Weeks</option>
+                  <option value="months">Last 12 Months</option>
+                  <option value="quarters">Last 8 Quarters</option>
+                </select>
+              </div>
+              <div className="filter-group" style={{display: 'flex', alignItems: 'center'}}>
+                <label style={{marginRight: 8}}>Chart Type:</label>
+                <select 
+                  value={forexChartType} 
+                  onChange={(e) => setForexChartType(e.target.value)}
+                  className="filter-select"
+                >
+                  <option value="line">Line Chart</option>
+                  <option value="bar">Bar Chart</option>
+                  <option value="pie">Pie Chart</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -829,7 +980,7 @@ const Dashboard = () => {
           <>
             {forexChartType === 'line' && <ProfitChart data={forexProfitData} height={350} />}
             {forexChartType === 'bar' && <BarChart data={forexProfitData} height={350} />}
-            {forexChartType === 'pie' && <PieChart data={forexTrades} height={350} />}
+            {forexChartType === 'pie' && <PieChart data={forexPieTrades} height={350} />}
           </>
         )}
       </div>
@@ -843,32 +994,34 @@ const Dashboard = () => {
               Track your daily, weekly, or monthly profit trends in the Indian stock market. Visualize performance with line charts for trends, bar charts for period comparisons, or pie charts to see your win/loss ratio.
             </p>
           </div>
-          <div className="chart-controls">
-            <div className="filter-group">
-              <label>Period:</label>
-              <select 
-                value={indianProfitPeriod} 
-                onChange={(e) => setIndianProfitPeriod(e.target.value)}
-                className="filter-select"
-              >
-                <option value="all">All Time</option>
-                <option value="last_week">Last Week</option>
-                <option value="last_month">Last Month</option>
-                <option value="last_3months">Last 3 Months</option>
-                <option value="last_6months">Last 6 Months</option>
-              </select>
-            </div>
-            <div className="filter-group">
-              <label>Chart Type:</label>
-              <select 
-                value={indianChartType} 
-                onChange={(e) => setIndianChartType(e.target.value)}
-                className="filter-select"
-              >
-                <option value="line">Line Chart</option>
-                <option value="bar">Bar Chart</option>
-                <option value="pie">Pie Chart</option>
-              </select>
+          <div className="chart-controls" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap'}}>
+            <div style={{flex: '1 1 auto'}} />
+            <div style={{display: 'flex', gap: 12, alignItems: 'center'}}>
+              <div className="filter-group" style={{display: 'flex', alignItems: 'center'}}>
+                <label style={{marginRight: 8}}>Period:</label>
+                <select 
+                  value={indianProfitPeriod} 
+                  onChange={(e) => setIndianProfitPeriod(e.target.value)}
+                  className="filter-select"
+                >
+                  <option value="days">Last 30 Days</option>
+                  <option value="weeks">Last 12 Weeks</option>
+                  <option value="months">Last 12 Months</option>
+                  <option value="quarters">Last 8 Quarters</option>
+                </select>
+              </div>
+              <div className="filter-group" style={{display: 'flex', alignItems: 'center'}}>
+                <label style={{marginRight: 8}}>Chart Type:</label>
+                <select 
+                  value={indianChartType} 
+                  onChange={(e) => setIndianChartType(e.target.value)}
+                  className="filter-select"
+                >
+                  <option value="line">Line Chart</option>
+                  <option value="bar">Bar Chart</option>
+                  <option value="pie">Pie Chart</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -880,7 +1033,7 @@ const Dashboard = () => {
           <>
             {indianChartType === 'line' && <ProfitChart data={indianProfitData} height={350} />}
             {indianChartType === 'bar' && <BarChart data={indianProfitData} height={350} />}
-            {indianChartType === 'pie' && <PieChart data={indianTrades} height={350} />}
+            {indianChartType === 'pie' && <PieChart data={indianPieTrades} height={350} />}
           </>
         )}
       </div>

@@ -512,3 +512,105 @@
     min-width: 600px;
   }
 }
+
+/* Mobile: left-align filter labels and ensure groups align to start */
+@media (max-width: 768px) {
+  .chart-controls .filter-group {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .chart-controls .filter-group label {
+    width: 100%;
+    text-align: left;
+    margin-bottom: 4px;
+  }
+
+  .date-range-row label {
+    text-align: left;
+    width: 100%;
+    margin: 0;
+  }
+}
+
+/* Clear filter button styling: matches filter design with red border and responsive layout */
+.clear-filter-btn {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 2px solid #e74c3c; /* red border */
+  background: #ffffff;
+  color: #e74c3c;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  align-self: center;
+}
+
+.clear-filter-btn:hover {
+  background: rgba(231,76,60,0.05);
+  transform: translateY(-2px);
+}
+
+/* Date range row: base and responsive layout */
+.date-range-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.date-range-row label {
+  margin-left: 4px;
+  margin-right: 4px;
+  font-size: 13px;
+}
+
+/* Make clear button visually consistent with filter buttons */
+.clear-filter-btn {
+  padding: 4px 6px;
+  min-width: 56px;
+  height: 32px;
+  border-radius: 6px;
+  border: 2px solid #e74c3c; /* red border */
+  background: #ffffff;
+  color: #e74c3c;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s ease-in-out;
+  align-self: center;
+  font-size: 12px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-filter-btn:hover {
+  background: rgba(231,76,60,0.04);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 480px) {
+  .chart-controls .filter-group > .date-range-row,
+  .chart-controls .filter-group > div.date-range-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .date-range-row .filter-select {
+    width: 100%;
+  }
+
+  .date-range-row label {
+    margin: 0;
+    font-size: 13px;
+  }
+
+  /* Align the clear button to the left and add spacing above it on small screens */
+  .date-range-row .clear-filter-btn {
+    align-self: flex-start;
+    margin-top: 12px;
+    margin-left: 0;
+  }
+}

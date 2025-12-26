@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../../hooks/useAuth.js';
 import './Sidebar.css';
 import { FaChartBar } from "react-icons/fa";
 import { FaHandHoldingDollar } from "react-icons/fa6";
@@ -100,6 +100,9 @@ const Sidebar = ({ isOpen, onClose }) => {
             </NavLink>
           )}
         </nav>
+        <div className="sidebar-footer">
+          <small>© {new Date().getFullYear()} Invikings. All rights reserved.</small>
+        </div>
       </aside>
     </>
   );

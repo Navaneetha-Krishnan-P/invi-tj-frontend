@@ -41,7 +41,8 @@ const TradeDetails = () => {
   const [trades, setTrades] = useState([]);
   const [filter, setFilter] = useState('all');
   const [marketFilter, setMarketFilter] = useState('all');
-  const [dateFilter, setDateFilter] = useState('all');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [loading, setLoading] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -94,22 +95,17 @@ const TradeDetails = () => {
     const matchesMarket = marketFilter === 'all' || 
       trade.market_type?.toUpperCase() === marketFilter.toUpperCase();
 
-    // Date filtering
+    // Date filtering: default show all. If user sets from/to, apply them.
     let matchesDate = true;
-    if (dateFilter !== 'all') {
+    if (fromDate) {
+      const from = new Date(fromDate + 'T00:00:00');
       const tradeDate = new Date(trade.trade_date);
-      const today = new Date();
-      
-      if (dateFilter === 'last_week') {
-        const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-        matchesDate = tradeDate >= lastWeek;
-      } else if (dateFilter === 'last_month') {
-        const lastMonth = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-        matchesDate = tradeDate >= lastMonth;
-      } else if (dateFilter === 'last_3months') {
-        const last3Months = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000);
-        matchesDate = tradeDate >= last3Months;
-      }
+      if (isFinite(from.getTime())) matchesDate = matchesDate && tradeDate >= from;
+    }
+    if (toDate) {
+      const to = new Date(toDate + 'T23:59:59');
+      const tradeDate = new Date(trade.trade_date);
+      if (isFinite(to.getTime())) matchesDate = matchesDate && tradeDate <= to;
     }
 
     return matchesStatus && matchesMarket && matchesDate;
@@ -123,6 +119,21 @@ const TradeDetails = () => {
 
   const handlePageChange = (event, pageNumber) => {
     setCurrentPage(pageNumber);
+  };
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter, marketFilter, fromDate, toDate]);
+
+  const formatDateDDMMYYYY = (dateInput) => {
+    if (!dateInput) return '';
+    const d = new Date(dateInput);
+    if (!isFinite(d.getTime())) return '';
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`; // DD/MM/YYYY
   };
 
   return (
@@ -181,17 +192,29 @@ const TradeDetails = () => {
                   </select>
                 </div>
                 <div className="filter-group">
-                  <label>Period:</label>
-                  <select 
-                    value={dateFilter} 
-                    onChange={(e) => setDateFilter(e.target.value)}
-                    className="filter-select"
-                  >
-                    <option value="all">All Time</option>
-                    <option value="last_week">Last Week</option>
-                    <option value="last_month">Last Month</option>
-                    <option value="last_3months">Last 3 Months</option>
-                  </select>
+                  <label>From :</label>
+                  <div className="date-range-row">
+                    <input
+                      type="date"
+                      value={fromDate}
+                      onChange={(e) => setFromDate(e.target.value)}
+                      className="filter-select"
+                    />
+                     <label>To :</label>
+                    <input
+                      type="date"
+                      value={toDate}
+                      onChange={(e) => setToDate(e.target.value)}
+                      className="filter-select"
+                    />
+                    <button
+                      type="button"
+                      className="clear-filter-btn"
+                      onClick={() => { setFromDate(''); setToDate(''); }}
+                    >
+                      Clear
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -231,7 +254,7 @@ const TradeDetails = () => {
                         <StyledTableCell className={Number(trade.profit_loss) >= 0 ? 'profit' : 'loss'}>
                           {Number(trade.profit_loss) >= 0 ? '+' : ''}{trade.market_type === 'INDIAN' ? '₹' : '$'}{Number(trade.profit_loss).toFixed(2)}
                         </StyledTableCell>
-                        <StyledTableCell>{new Date(trade.trade_date).toLocaleDateString()}</StyledTableCell>
+                        <StyledTableCell>{formatDateDDMMYYYY(trade.trade_date)}</StyledTableCell>
                       </StyledTableRow>
                     ))}
                   </TableBody>

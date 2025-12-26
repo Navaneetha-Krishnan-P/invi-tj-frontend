@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5000/api/auth';
+const API_URL = 'http://62.84.183.182:5001/api/auth';
 
 // Sign Up
 export const signup = async (name, email, phone, password) => {

@@ -3,12 +3,28 @@
   background: linear-gradient(115deg, #000 0%, #345c90 100%) !important; 
   min-height: calc(100vh - 70px);
   box-shadow: 2px 0 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
   padding: 20px 0;
+}
+
+.sidebar-footer {
+  padding: 16px 20px;
+  color: rgba(236, 240, 241, 0.9);
+  font-size: 12px;
+  text-align: left;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.sidebar-footer small {
+  display: block;
+  opacity: 0.9;
 }
 
 .sidebar-nav .nav-item {

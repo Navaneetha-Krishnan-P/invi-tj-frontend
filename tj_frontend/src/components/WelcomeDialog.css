@@ -114,12 +114,6 @@
   transition: all 0.2s ease;
 }
 
-.feature-item:hover {
-  transform: translateX(5px);
-  background: rgba(255, 255, 255, 0.15);
-  border-left-color: rgba(255, 255, 255, 0.5);
-}
-
 .feature-icon {
   font-size: 24px;
   line-height: 1;
