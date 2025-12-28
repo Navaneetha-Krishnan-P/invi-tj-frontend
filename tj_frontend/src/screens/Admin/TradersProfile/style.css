@@ -1,7 +1,7 @@
 /* Traders Profile - Specific Classes */
 
 /* Profile Section Wrapper */
-.traders-profile-section { 
+.traders-profile-section {
   background: rgb(237, 243, 255);
   padding: 36px 24px 0px 24px;
   border-radius: 12px;
@@ -305,6 +305,16 @@
   .section-button button {
     width: 100%;
     min-width: 100% !important;
+  }
+
+  .section-button {
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .section-button span {
+    margin-top: 8px;
   }
 }
 

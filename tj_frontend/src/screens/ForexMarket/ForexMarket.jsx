@@ -1,13 +1,22 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { tradeAPI, imageAPI } from '../../services/api';
 import ErrorSnackbar from '../../components/ErrorSnackbar';
 import StyledTextField from '../../components/StyledTextField';
 import './ForexMarket.css';
-import { FaEdit } from "react-icons/fa";
-import { CgCloseR } from "react-icons/cg";
-import { MenuItem, Button, Card, CardContent, CardActions, IconButton, Typography } from '@mui/material';
+import { FaEdit } from 'react-icons/fa';
+import { CgCloseR } from 'react-icons/cg';
+import {
+  MenuItem,
+  Button,
+  Card,
+  CardContent,
+  CardActions,
+  IconButton,
+  Typography,
+} from '@mui/material';
 
 const ForexMarket = () => {
+  const fileInputRef = useRef(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -15,7 +24,7 @@ const ForexMarket = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState('error');
   const [trades, setTrades] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
-  
+
   // Form fields for manual trade entry
   const [formData, setFormData] = useState({
     symbol: '',
@@ -24,14 +33,14 @@ const ForexMarket = () => {
     entry_price: '',
     exit_price: '',
     trade_date: '',
-    profit_loss: ''
+    profit_loss: '',
   });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -48,7 +57,7 @@ const ForexMarket = () => {
       entry_price: parseFloat(formData.entry_price) || 0,
       exit_price: formData.exit_price ? parseFloat(formData.exit_price) : null,
       profit_loss: parseFloat(formData.profit_loss) || 0,
-      trade_date: formData.trade_date || new Date().toISOString(),
+      trade_date: formData.trade_date || new Date().toISOString().split('T')[0],
     };
 
     if (editingIndex !== null) {
@@ -69,7 +78,7 @@ const ForexMarket = () => {
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
     }
-    
+
     // Reset form
     setFormData({
       symbol: '',
@@ -78,20 +87,22 @@ const ForexMarket = () => {
       entry_price: '',
       exit_price: '',
       trade_date: '',
-      profit_loss: ''
+      profit_loss: '',
     });
   };
 
   const handleEditTrade = (index) => {
     const trade = trades[index];
+    const isoDate = trade.trade_date ? trade.trade_date.split('T')[0] : '';
+
     setFormData({
       symbol: trade.symbol,
       trade_type: trade.trade_type,
       lot_size: trade.lot_size.toString(),
       entry_price: trade.entry_price.toString(),
       exit_price: trade.exit_price ? trade.exit_price.toString() : '',
-      trade_date: trade.trade_date ? trade.trade_date.split('T')[0] : '',
-      profit_loss: trade.profit_loss.toString()
+      trade_date: isoDate,
+      profit_loss: trade.profit_loss.toString(),
     });
     setEditingIndex(index);
   };
@@ -105,7 +116,7 @@ const ForexMarket = () => {
       entry_price: '',
       exit_price: '',
       trade_date: '',
-      profit_loss: ''
+      profit_loss: '',
     });
   };
 
@@ -134,7 +145,6 @@ const ForexMarket = () => {
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
       }
-
     } catch (err) {
       console.error('Save trades error:', err);
       const errorMsg = 'Oops! Something went wrong';
@@ -169,6 +179,7 @@ const ForexMarket = () => {
       setSnackbarMessage('Please upload a valid image file (PNG, JPG, JPEG, GIF, BMP)');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
@@ -177,6 +188,7 @@ const ForexMarket = () => {
       setSnackbarMessage('File size should be less than 5MB');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
 
@@ -204,18 +216,44 @@ const ForexMarket = () => {
 
         data.trades.forEach((trade, index) => {
           const missingFields = [];
-          
+
           // Check for missing or invalid required fields
-          if (!trade.symbol || trade.symbol === '' || trade.symbol === null) missingFields.push('symbol');
+          if (!trade.symbol || trade.symbol === '' || trade.symbol === null)
+            missingFields.push('symbol');
           if (!trade.type || trade.type === '' || trade.type === null) missingFields.push('type');
-          if (trade.lot === null || trade.lot === undefined || isNaN(parseFloat(trade.lot))) missingFields.push('lot');
-          if (trade.price_in === null || trade.price_in === undefined || isNaN(parseFloat(trade.price_in))) missingFields.push('entry price');
-          if (trade.price_out === null || trade.price_out === undefined || isNaN(parseFloat(trade.price_out))) missingFields.push('exit price');
-          if (trade.profit === null || trade.profit === undefined || isNaN(parseFloat(trade.profit))) missingFields.push('profit');
+          if (trade.lot === null || trade.lot === undefined || isNaN(parseFloat(trade.lot)))
+            missingFields.push('lot');
+          if (
+            trade.price_in === null ||
+            trade.price_in === undefined ||
+            isNaN(parseFloat(trade.price_in))
+          )
+            missingFields.push('entry price');
+          if (
+            trade.price_out === null ||
+            trade.price_out === undefined ||
+            isNaN(parseFloat(trade.price_out))
+          )
+            missingFields.push('exit price');
+          if (
+            trade.profit === null ||
+            trade.profit === undefined ||
+            isNaN(parseFloat(trade.profit))
+          )
+            missingFields.push('profit');
 
           if (missingFields.length > 0) {
             invalidTrades.push({ index: index + 1, fields: missingFields });
           } else {
+            // Parse datetime format "2025.12.08  12:31:11" to "2025-12-08"
+            let dateOnly = '';
+            if (trade.datetime) {
+              const datePart = trade.datetime.split(' ')[0]; // Get "2025.12.08"
+              dateOnly = datePart.replace(/\./g, '-'); // Convert to "2025-12-08"
+            } else {
+              dateOnly = new Date().toISOString().split('T')[0];
+            }
+
             validTrades.push({
               user_id: localStorage.getItem('userId'),
               market_type: 'FOREX',
@@ -225,18 +263,20 @@ const ForexMarket = () => {
               entry_price: parseFloat(trade.price_in),
               exit_price: parseFloat(trade.price_out),
               profit_loss: parseFloat(trade.profit),
-              trade_date: trade.datetime ? new Date(trade.datetime.replace(/\s+/g, ' ').replace(/\./g, '-')).toISOString() : new Date().toISOString()
+              trade_date: dateOnly,
             });
           }
         });
 
         if (invalidTrades.length > 0) {
-          const errorDetails = invalidTrades.map(t => `Trade ${t.index}: missing ${t.fields.join(', ')}`).join('; ');
+          const errorDetails = invalidTrades
+            .map((t) => `Trade ${t.index}: missing ${t.fields.join(', ')}`)
+            .join('; ');
           const errorMsg = `Image quality issue! ${invalidTrades.length} trade(s) have missing data (${errorDetails}). Please upload a clear image or enter trades manually.`;
           setSnackbarMessage(errorMsg);
           setSnackbarSeverity('error');
           setSnackbarOpen(true);
-          
+
           // Still add valid trades if any exist
           if (validTrades.length > 0) {
             setTrades([...trades, ...validTrades]);
@@ -257,21 +297,25 @@ const ForexMarket = () => {
         }
       } else {
         // No trades array found
-        const errorMsg = 'Unable to extract trade data from image. Please upload a clear image or enter trades manually.';
+        const errorMsg =
+          'Unable to extract trade data from image. Please upload a clear image or enter trades manually.';
         setSnackbarMessage(errorMsg);
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
       }
-      
-      setSelectedImage(null);
 
+      setSelectedImage(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
       console.error('Image processing error:', err);
-      setSnackbarMessage('Unable to process image. Please upload a clear image or manually enter the trade data.');
+      setSnackbarMessage(
+        'Unable to process image. Please upload a clear image or manually enter the trade data.'
+      );
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
     } finally {
       setIsProcessing(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -285,25 +329,23 @@ const ForexMarket = () => {
       <div className="trade-entry-container">
         {/* Manual Trade Entry Form */}
         <div className="manual-entry-section">
-          <h3>{editingIndex !== null ? 'Edit Trade' : 'Add Trade'}</h3><br/>
+          <h3>{editingIndex !== null ? 'Edit Trade' : 'Add Trade'}</h3>
+          <br />
           {editingIndex !== null && (
-            <Button 
-              variant="outlined" 
-              color="error" 
-              onClick={handleCancelEdit}
-              sx={{ mb: 4 }}
-            >
+            <Button variant="outlined" color="error" onClick={handleCancelEdit} sx={{ mb: 4 }}>
               Cancel Edit
             </Button>
           )}
-          
+
           {/* Image Upload Feature - Optional */}
           <div className="image-upload-feature">
             <p className="feature-description">
-              Upload a trade screenshot to auto-fill the form below. If any details are incorrect, you can manually edit them before saving.
+              Upload a trade screenshot to auto-fill the form below. If any details are incorrect,
+              you can manually edit them before saving.
             </p>
             <label className="upload-label-compact">
               <input
+                ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
@@ -323,9 +365,9 @@ const ForexMarket = () => {
                 )}
               </div>
             </label>
-            
+
             {selectedImage && (
-              <Button 
+              <Button
                 variant="contained"
                 onClick={processImage}
                 disabled={isProcessing}
@@ -368,7 +410,7 @@ const ForexMarket = () => {
                 value={formData.entry_price}
                 onChange={handleInputChange}
                 placeholder="4207.84"
-                inputProps={{ step: "0.01" }}
+                inputProps={{ step: '0.01' }}
                 required
               />
 
@@ -379,7 +421,7 @@ const ForexMarket = () => {
                 value={formData.exit_price}
                 onChange={handleInputChange}
                 placeholder="4201.61"
-                inputProps={{ step: "0.01" }}
+                inputProps={{ step: '0.01' }}
                 required
               />
             </div>
@@ -392,7 +434,7 @@ const ForexMarket = () => {
                 value={formData.lot_size}
                 onChange={handleInputChange}
                 placeholder="1"
-                inputProps={{ step: "1" }}
+                inputProps={{ step: '1' }}
                 required
               />
 
@@ -403,7 +445,7 @@ const ForexMarket = () => {
                 value={formData.profit_loss}
                 onChange={handleInputChange}
                 placeholder="155.75"
-                inputProps={{ step: "0.01" }}
+                inputProps={{ step: '0.01' }}
                 required
               />
             </div>
@@ -412,17 +454,17 @@ const ForexMarket = () => {
               <StyledTextField
                 label="Date"
                 name="trade_date"
-                type="datetime-local"
-                value={formData.trade_date ? formData.trade_date.slice(0, 16) : ''}
+                type="date"
+                value={formData.trade_date}
                 onChange={handleInputChange}
                 required
                 InputLabelProps={{ shrink: true }}
               />
             </div>
 
-            <div style={{marginBottom: "10px"}}>
-              <Button 
-                type="submit" 
+            <div style={{ marginBottom: '10px' }}>
+              <Button
+                type="submit"
                 variant="contained"
                 color="primary"
                 fullWidth
@@ -431,8 +473,8 @@ const ForexMarket = () => {
                 {editingIndex !== null ? 'Update Trade' : 'Add Trade'}
               </Button>
             </div>
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               variant="contained"
               color="success"
               fullWidth
@@ -454,59 +496,96 @@ const ForexMarket = () => {
           ) : (
             <div className="trades-preview-list">
               {trades.map((trade, index) => (
-                <Card 
-                  key={index} 
-                  sx={{ 
-                    mb: 1.5, 
+                <Card
+                  key={index}
+                  sx={{
+                    mb: 1.5,
                     border: editingIndex === index ? '2px solid #1976d2' : '1px solid #e1e8ed',
-                    backgroundColor : editingIndex === index ? 'whitesmoke' : 'rgb(237, 243, 255)',
-                    boxShadow: 'none'
+                    backgroundColor: editingIndex === index ? 'whitesmoke' : 'rgb(237, 243, 255)',
+                    boxShadow: 'none',
                   }}
                 >
                   <CardContent sx={{ p: 1.2, '&:last-child': { pb: 1.2 } }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '12px',
+                      }}
+                    >
                       <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                          <Typography variant="subtitle1" component="span" color="primary" sx={{ fontWeight: 600 }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            marginBottom: '4px',
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle1"
+                            component="span"
+                            color="primary"
+                            sx={{ fontWeight: 600 }}
+                          >
                             #{index + 1}
                           </Typography>
                           <Typography variant="body2" fontWeight="600">
                             {trade.symbol} - {trade.trade_type}
                           </Typography>
                         </div>
-                        <div style={{ display: 'flex', gap: '16px', rowGap: '5px',  flexWrap: 'wrap' }}>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                        <div
+                          style={{ display: 'flex', gap: '16px', rowGap: '5px', flexWrap: 'wrap' }}
+                        >
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ fontSize: '0.8rem' }}
+                          >
                             Lot: {trade.lot_size}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ fontSize: '0.8rem' }}
+                          >
                             Entry: ${trade.entry_price}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ fontSize: '0.8rem' }}
+                          >
                             Exit: ${trade.exit_price || 'N/A'}
                           </Typography>
-                          <Typography 
-                            variant="body2" 
-                            sx={{ 
+                          <Typography
+                            variant="body2"
+                            sx={{
                               color: trade.profit_loss >= 0 ? '#27ae60' : '#e74c3c',
                               fontWeight: 'bold',
-                              fontSize: '0.85rem'
+                              fontSize: '0.85rem',
                             }}
                           >
                             P/L: ${trade.profit_loss.toFixed(2)}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                            {new Date(trade.trade_date).toLocaleString('en-US', { 
-                              month: 'short', 
-                              day: 'numeric', 
-                              year: 'numeric', 
-                              hour: '2-digit', 
-                              minute: '2-digit'
-                            })}
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ fontSize: '0.75rem' }}
+                          >
+                            {(() => {
+                              const date = new Date(trade.trade_date);
+                              const day = String(date.getDate()).padStart(2, '0');
+                              const month = String(date.getMonth() + 1).padStart(2, '0');
+                              const year = date.getFullYear();
+                              return `${day}-${month}-${year}`;
+                            })()}
                           </Typography>
                         </div>
                       </div>
                       <div>
-                        <IconButton 
+                        <IconButton
                           size="small"
                           color="primary"
                           onClick={() => handleEditTrade(index)}
@@ -514,10 +593,10 @@ const ForexMarket = () => {
                         >
                           <FaEdit />
                         </IconButton>
-                        <IconButton 
+                        <IconButton
                           size="small"
                           color="error"
-                          style={{marginTop : "2px"}}
+                          style={{ marginTop: '2px' }}
                           onClick={() => handleRemoveTrade(index)}
                           title="Remove trade"
                         >
@@ -531,9 +610,8 @@ const ForexMarket = () => {
             </div>
           )}
         </div>
-
       </div>
-      
+
       <ErrorSnackbar
         open={snackbarOpen}
         message={snackbarMessage}

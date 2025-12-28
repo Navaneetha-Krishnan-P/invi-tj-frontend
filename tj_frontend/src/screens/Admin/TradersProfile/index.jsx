@@ -1,7 +1,20 @@
-import { IoArrowBack } from "react-icons/io5";
+import { IoArrowBack } from 'react-icons/io5';
 import React, { useState, useEffect } from 'react';
+// All admin API calls must be imported from '../../../services/api'.
 import { adminAPI } from '../../../services/api';
-import { Autocomplete, TextField, Card, CardContent, Button, Switch, FormControlLabel, Snackbar, Alert, CircularProgress } from '@mui/material';
+import {
+  Autocomplete,
+  TextField,
+  Card,
+  CardContent,
+  Button,
+  Switch,
+  FormControlLabel,
+  CircularProgress,
+} from '@mui/material';
+import ErrorSnackbar from '../../../components/ErrorSnackbar';
+import ConfirmDialog from '../../../components/ConfirmDialog';
+import { RiDeleteBin6Line } from 'react-icons/ri';
 import './style.css';
 
 const TradersProfile = ({ onBack }) => {
@@ -13,7 +26,8 @@ const TradersProfile = ({ onBack }) => {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
-  
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   // Form state
   const [formData, setFormData] = useState({
     name: '',
@@ -21,12 +35,12 @@ const TradersProfile = ({ onBack }) => {
     phone: '',
     role_type: 'TRADER',
     is_active: false,
-    is_verified: true
+    is_verified: true,
   });
-  
+
   const [passwordData, setPasswordData] = useState({
     newPassword: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
 
   useEffect(() => {
@@ -35,7 +49,7 @@ const TradersProfile = ({ onBack }) => {
 
   useEffect(() => {
     if (selectedUser) {
-      fetchUserDetails(selectedUser.id);
+      fetchUserDetails(selectedUser.user_id);
     } else {
       setUserDetails(null);
       resetForm();
@@ -66,7 +80,7 @@ const TradersProfile = ({ onBack }) => {
           phone: data.user.phone,
           role_type: data.user.role_type,
           is_active: data.user.is_active,
-          is_verified: data.user.is_verified
+          is_verified: data.user.is_verified,
         });
       }
     } catch (err) {
@@ -84,20 +98,20 @@ const TradersProfile = ({ onBack }) => {
       phone: '',
       role_type: 'TRADER',
       is_active: false,
-      is_verified: true
+      is_verified: true,
     });
     setPasswordData({
       newPassword: '',
-      confirmPassword: ''
+      confirmPassword: '',
     });
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handlePasswordChange = (field, value) => {
-    setPasswordData(prev => ({ ...prev, [field]: value }));
+    setPasswordData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSaveProfile = () => {
@@ -108,7 +122,7 @@ const TradersProfile = ({ onBack }) => {
     try {
       setShowSaveConfirm(false);
       setSaving(true);
-      const data = await adminAPI.updateUser(selectedUser.id, formData);
+      const data = await adminAPI.updateUser(selectedUser.user_id, formData);
       if (data.success) {
         setUserDetails(data.user);
         showSnackbar('Profile updated successfully', 'success');
@@ -142,7 +156,10 @@ const TradersProfile = ({ onBack }) => {
     try {
       setShowPasswordConfirm(false);
       setSaving(true);
-      const data = await adminAPI.updateUserPassword(selectedUser.id, passwordData.newPassword);
+      const data = await adminAPI.updateUserPassword(
+        selectedUser.user_id,
+        passwordData.newPassword
+      );
       if (data.success) {
         showSnackbar('Password updated successfully', 'success');
         setPasswordData({ newPassword: '', confirmPassword: '' });
@@ -159,20 +176,48 @@ const TradersProfile = ({ onBack }) => {
     setShowPasswordConfirm(false);
   };
 
+  const handleDeleteUser = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteUser = async () => {
+    try {
+      setShowDeleteConfirm(false);
+      setSaving(true);
+      const data = await adminAPI.deleteUser(selectedUser.user_id);
+      if (data.success) {
+        showSnackbar('User deleted successfully', 'success');
+        setSelectedUser(null);
+        setUserDetails(null);
+        resetForm();
+        fetchUsers(); // Refresh user list
+      }
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      showSnackbar('Failed to delete user', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const cancelDeleteUser = () => {
+    setShowDeleteConfirm(false);
+  };
+
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity });
   };
 
   const handleCloseSnackbar = () => {
-    setSnackbar(prev => ({ ...prev, open: false }));
+    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   return (
     <div className="trade-details-screen">
       <div className="screen-header responsive-header">
         <div className="header-title">
-          <div className='header-icon' onClick={onBack}>
-            <IoArrowBack size={24} color='#345c90' />
+          <div className="header-icon" onClick={onBack}>
+            <IoArrowBack size={24} color="#345c90" />
           </div>
           <h3>Traders Profile Management</h3>
         </div>
@@ -182,7 +227,7 @@ const TradersProfile = ({ onBack }) => {
         <div className="trader-multiselect-group">
           <Autocomplete
             options={users}
-            getOptionLabel={(option) => `${option.name} (${option.email})`}
+            getOptionLabel={(option) => `${option.name} (@${option.user_id})`}
             value={selectedUser}
             onChange={(event, newValue) => setSelectedUser(newValue)}
             renderInput={(params) => (
@@ -297,7 +342,9 @@ const TradersProfile = ({ onBack }) => {
                   <label>Email Verification</label>
                   <select
                     value={formData.is_verified ? 'verified' : 'unverified'}
-                    onChange={(e) => handleInputChange('is_verified', e.target.value === 'verified')}
+                    onChange={(e) =>
+                      handleInputChange('is_verified', e.target.value === 'verified')
+                    }
                     className="role-select"
                   >
                     <option value="verified">Verified</option>
@@ -306,23 +353,53 @@ const TradersProfile = ({ onBack }) => {
                 </div>
               </div>
 
-              <div className="section-button">
+              <div
+                className="section-button"
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
                 <Button
                   variant="contained"
                   onClick={handleSaveProfile}
                   disabled={saving}
                   sx={{
-                    background: 'linear-gradient(135deg, #1976d2 0%, #64b5f6 100%)',
+                    background: '#345c90',
+                    '&:hover': {
+                      background: '#2a4a73',
+                    },
                     textTransform: 'none',
                     fontWeight: 600,
                     fontSize: 16,
                     padding: '12px 32px',
                     borderRadius: 2,
-                    minWidth: 200
+                    minWidth: 200,
                   }}
                 >
                   {saving ? 'Saving...' : 'Save Changes'}
                 </Button>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    borderRadius: '50%',
+                    transition: 'background 0.2s',
+                    cursor: 'pointer',
+                    width: 40,
+                    height: 40,
+                    justifyContent: 'center',
+                  }}
+                  onClick={handleDeleteUser}
+                  title="Delete User"
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = 'rgba(255,107,107,0.12)')
+                  }
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <RiDeleteBin6Line
+                    size={22}
+                    color="#ff6b6b"
+                    style={{ transition: 'color 0.2s' }}
+                  />
+                </span>
               </div>
             </div>
 
@@ -361,14 +438,16 @@ const TradersProfile = ({ onBack }) => {
                   onClick={handleSavePassword}
                   disabled={saving || !passwordData.newPassword || !passwordData.confirmPassword}
                   sx={{
-                    background: 'linear-gradient(135deg, #f9a825 0%, #fff59d 100%)',
-                    color: '#333',
+                    background: '#345c90',
+                    '&:hover': {
+                      background: '#2a4a73',
+                    },
                     textTransform: 'none',
                     fontWeight: 600,
                     fontSize: 16,
                     padding: '12px 32px',
                     borderRadius: 2,
-                    minWidth: 200
+                    minWidth: 200,
                   }}
                 >
                   {saving ? 'Updating...' : 'Update Password'}
@@ -384,52 +463,38 @@ const TradersProfile = ({ onBack }) => {
         </div>
       )}
 
-      <Snackbar
+      <ErrorSnackbar
         open={snackbar.open}
-        autoHideDuration={4000}
+        message={snackbar.message}
+        severity={snackbar.severity}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+        autoHideDuration={4000}
+      />
 
-      {/* Save Profile Confirmation Dialog */}
-      {showSaveConfirm && (
-        <div className="logout-confirm-overlay">
-          <div className="logout-confirm-dialog">
-            <h3>Confirm Save Changes</h3>
-            <p>Are you sure you want to save the profile changes?</p>
-            <div className="logout-confirm-buttons">
-              <button className="logout-confirm-btn" onClick={confirmSaveProfile}>
-                Confirm
-              </button>
-              <button className="logout-cancel-btn" onClick={cancelSaveProfile}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={showSaveConfirm}
+        title="Confirm Save Changes"
+        message="Are you sure you want to save the profile changes?"
+        onConfirm={confirmSaveProfile}
+        onCancel={cancelSaveProfile}
+      />
 
-      {/* Password Update Confirmation Dialog */}
-      {showPasswordConfirm && (
-        <div className="logout-confirm-overlay">
-          <div className="logout-confirm-dialog">
-            <h3>Confirm Password Update</h3>
-            <p>Are you sure you want to update the password for this user?</p>
-            <div className="logout-confirm-buttons">
-              <button className="logout-confirm-btn" onClick={confirmSavePassword}>
-                Confirm
-              </button>
-              <button className="logout-cancel-btn" onClick={cancelSavePassword}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={showPasswordConfirm}
+        title="Confirm Password Update"
+        message="Are you sure you want to update the password for this user?"
+        onConfirm={confirmSavePassword}
+        onCancel={cancelSavePassword}
+      />
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Confirm Delete User"
+        message="Are you sure you want to delete this user? This action cannot be undone."
+        onConfirm={confirmDeleteUser}
+        onCancel={cancelDeleteUser}
+        confirmText="Delete"
+      />
     </div>
   );
 };
