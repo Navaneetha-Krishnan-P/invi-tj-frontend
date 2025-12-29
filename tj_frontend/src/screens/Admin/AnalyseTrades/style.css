@@ -1,13 +1,12 @@
 .trade-details-screen {
   max-width: 1600px;
   margin: 0 auto;
-  padding-bottom: 40px;
+  padding-bottom: 20px;
 }
 
 .chart-section .chart-header h2 {
   font-size: 20px;
   background-color: #345c90;
-  margin-bottom: 8px;
   font-weight: 700;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -46,6 +45,44 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.header-icon:hover {
+  cursor: pointer;  
+  transform: translateX(-2px);
+}
+
+.screen-header.responsive-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.header-description {
+  font-size: 14px;
+  color: #7f8c8d;
+  font-weight: 400;
+  margin: 0;
+  flex: 1 1 100%;
+  order: 2;
+}
+
+.trader-multiselect-group {
+  flex: 0 0 auto;
+  min-width: 280px;
+  max-width: 400px;
+  order: 3;
+  margin: 8px 0px 5px 0px;
 }
 
 .trade-filters > div,
@@ -321,19 +358,26 @@
   background: white;
   padding: 60px 20px;
   border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   text-align: center;
   color: #7f8c8d;
   font-size: 16px;
 }
 
+.chart-section {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 50px;
+}
+
 .pagination {
-  margin-top: 20px;
+  margin-top: 24px;
+  margin-bottom: 0;
   display: flex;
-  justify-content: flex-end; /* Align to the right */
-  width: 100%; /* Ensure it spans the container */
-  padding-right: 20px; /* Add padding to ensure proper spacing */
-  position: relative; /* Ensure proper positioning */
+  justify-content: flex-end;
+  width: 100%;
+  padding-right: 0;
 }
 
 @media (max-width: 768px) {
@@ -449,29 +493,80 @@
   }
 }
 
+/* Tablet Responsive */
+@media (max-width: 900px) {
+  .screen-header.responsive-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .trader-multiselect-group {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    order: 3;
+  }
+  .header-description {
+    font-size: 14px;
+    order: 2;
+  }
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .trade-details-screen {
-    padding: 0;
+    padding: 0 10px;
   }
 
-  .screen-header h2 {
+  .screen-header.responsive-header {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .header-title h3 {
     font-size: 18px;
   }
+  
+  .header-description {
+    font-size: 13px;
+  }
+  
+  .trader-multiselect-group {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 8px 0px 5px 0px;
 
-  .screen-header p {
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 600px) {
+  .trade-details-screen {
+    padding: 0 8px;
+  }
+  
+  .screen-header.responsive-header {
+    gap: 8px;
+  }
+  
+  .header-title h3 {
+    font-size: 16px;
+  }
+  
+  .header-description {
     font-size: 12px;
   }
-
-  .chart-section {
-    padding: 15px;
-    overflow-x: auto;
-  }
-
-  .chart-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
+  
+  .trader-multiselect-group,
+  .trader-multiselect-group .MuiAutocomplete-root,
+  .trader-multiselect-group .MuiOutlinedInput-root {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    margin: 8px 0px 2px 0px;
   }
 
   .chart-header h2 {

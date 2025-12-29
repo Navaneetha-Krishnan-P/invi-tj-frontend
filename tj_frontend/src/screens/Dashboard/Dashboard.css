@@ -398,6 +398,50 @@
   margin-bottom: 25px;
 }
 
+/* Chart controls shared layout: right-aligned on desktop, centered on mobile */
+.chart-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.chart-controls .filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .chart-controls {
+    justify-content: center;
+  }
+}
+
+/* Make selects adaptive: compact on desktop, fluid on mobile */
+.chart-controls .filter-select {
+  min-width: 110px;
+  max-width: 220px;
+  width: auto;
+  padding: 6px 8px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .chart-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .chart-controls .filter-group {
+    width: 100%;
+    justify-content: center;
+  }
+  .chart-controls .filter-select {
+    width: 100%;
+    max-width: 360px;
+  }
+}
+
 .pl-bar-group {
   display: flex;
   flex-direction: column;
@@ -1067,11 +1111,6 @@
   .capital-input-section > div {
     flex-direction: column;
     align-items: stretch !important;
-  }
-
-  .filter-select {
-    width: 100% !important;
-    min-width: 100% !important;
   }
 
   .performance-card-single {

@@ -1,10 +1,9 @@
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../../hooks/useAuth.js';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import './Navbar.css';
-import { CgProfile } from "react-icons/cg";
-import invikingsLogo from '../../assets/InvikingsPic.png';
-
+import { CgProfile } from 'react-icons/cg';
+import invikingsLogo from '../../../assets/InvikingsPic.png';
 
 const Navbar = ({ onMenuToggle }) => {
   const { user, signOut } = useAuth();
@@ -21,9 +20,9 @@ const Navbar = ({ onMenuToggle }) => {
     try {
       setShowLogoutConfirm(false);
       setIsLoggingOut(true);
-      
+
       await signOut;
-      
+
       setTimeout(() => {
         setIsLoggingOut(false);
         navigate('/login');
@@ -71,34 +70,35 @@ const Navbar = ({ onMenuToggle }) => {
             </div>
           </div>
           <div className="navbar-user">
-            <div 
-              className="profile-container"
-              onClick={toggleProfileMenu}
-            >
-            <div className="profile-icon">
-              <CgProfile size={24} />
-            </div>
-            
-            {showProfileMenu && (
-              <div className="profile-dropdown">
-                <div className="profile-header">
-                  <div className="profile-avatar">
-                    {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
-                  </div>
-                  <div className="profile-info">
-                    <h4>{user?.name || 'User'}</h4>
-                    <p className="profile-email">{user?.email}</p>
-                  </div>
-                </div>
-                                
-                <button className="profile-logout-btn" onClick={handleLogout}>
-                  Logout
-                </button>
+            <div className="profile-container" onClick={toggleProfileMenu}>
+              <div className="profile-icon">
+                <CgProfile size={24} />
               </div>
-            )}
+
+              {showProfileMenu && (
+                <div className="profile-dropdown">
+                  <div className="profile-header">
+                    <div className="profile-avatar">
+                      {user?.name?.charAt(0)?.toUpperCase() ||
+                        user?.email?.charAt(0)?.toUpperCase() ||
+                        'U'}
+                    </div>
+                    <div className="profile-info">
+                      <h4>{user?.name || 'User'}</h4>
+                      {user?.user_id && <p className="profile-userid">@{user.user_id}</p>}
+                      <p className="profile-email">{user?.email}</p>
+                      {user?.role_type && <p className="profile-role">{user.role_type}</p>}
+                    </div>
+                  </div>
+
+                  <button className="profile-logout-btn" onClick={handleLogout}>
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
       </nav>
 
       {showLogoutConfirm && (

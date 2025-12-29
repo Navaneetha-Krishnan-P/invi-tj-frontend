@@ -1,9 +1,11 @@
+// All admin API calls must be imported from '../../../services/api'.
+// Remove all direct axios/fetch API calls from this file. Use adminAPI from api.js for all API requests.
 import { useState, useEffect } from 'react';
-import { dashboardAPI } from '../../services/api';
+import { dashboardAPI, adminAPI } from '../../../services/api';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-import ErrorSnackbar from '../../components/ErrorSnackbar';
-import './TradeDetails.css';
+import ErrorSnackbar from '../../../components/ErrorSnackbar';
+import './style.css';
 import { styled } from '@mui/material/styles';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -14,11 +16,13 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
+import { IoArrowBack } from 'react-icons/io5';
+import TraderMultiSelect from '../../../components/TraderMultiSelect';
 
 const StyledTableCell = styled(TableCell)(() => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: '#345c90', 
-    color: '#ffffff'
+    backgroundColor: '#345c90',
+    color: '#ffffff',
   },
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
@@ -37,8 +41,10 @@ const StyledTableRow = styled(TableRow)(() => ({
   },
 }));
 
-const TradeDetails = () => {
+const AnalyseTrades = ({ onBack }) => {
   const [trades, setTrades] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
   const [filter, setFilter] = useState('all');
   const [marketFilter, setMarketFilter] = useState('all');
   const [fromDate, setFromDate] = useState('');
@@ -48,11 +54,26 @@ const TradeDetails = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('error');
   const [currentPage, setCurrentPage] = useState(1);
-  const tradesPerPage = 10;
+  const tradesPerPage = 15;
 
   useEffect(() => {
+    fetchUsers();
     fetchTrades();
-  }, []);
+  }, [selectedUsers]);
+
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
+
+      const data = await adminAPI.getUsers();
+      if (data.success) {
+        setUsers(data.users || []);
+      }
+    } catch (err) {
+      console.error('Error fetching users:', err);
+    }
+  };
 
   const fetchTrades = async () => {
     try {
@@ -67,15 +88,16 @@ const TradeDetails = () => {
         return;
       }
 
-      // Fetch both INDIAN and FOREX trades
-      const [indianData, forexData] = await Promise.all([
-        dashboardAPI.getTrades('INDIAN', 100),
-        dashboardAPI.getTrades('FOREX', 100)
-      ]);
-      
-      // Combine both arrays
-      const allTrades = [...(indianData.trades || []), ...(forexData.trades || [])];
-      setTrades(allTrades);
+      // Support multi-user filter
+      const userIds =
+        selectedUsers && selectedUsers.length > 0 ? selectedUsers.map((u) => u.id) : null;
+
+      const data = await adminAPI.getAllTrades(userIds);
+      if (data.success) {
+        setTrades(data.trades || []);
+      } else {
+        throw new Error(data.error || 'Failed to fetch trades');
+      }
     } catch (err) {
       console.error('Error fetching trades:', err);
       const errorMsg = 'Oops! Something went wrong';
@@ -87,13 +109,14 @@ const TradeDetails = () => {
     }
   };
 
-  const filteredTrades = trades.filter(trade => {
-    const matchesStatus = filter === 'all' || 
+  const filteredTrades = trades.filter((trade) => {
+    const matchesStatus =
+      filter === 'all' ||
       (filter === 'profit' && Number(trade.profit_loss) > 0) ||
       (filter === 'loss' && Number(trade.profit_loss) < 0);
 
-    const matchesMarket = marketFilter === 'all' || 
-      trade.market_type?.toUpperCase() === marketFilter.toUpperCase();
+    const matchesMarket =
+      marketFilter === 'all' || trade.market_type?.toUpperCase() === marketFilter.toUpperCase();
 
     // Date filtering: default show all. If user sets from/to, apply them.
     let matchesDate = true;
@@ -124,7 +147,7 @@ const TradeDetails = () => {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [filter, marketFilter, fromDate, toDate]);
+  }, [filter, marketFilter, fromDate, toDate, selectedUsers]);
 
   const formatDateDDMMYYYY = (dateInput) => {
     if (!dateInput) return '';
@@ -138,9 +161,28 @@ const TradeDetails = () => {
 
   return (
     <div className="trade-details-screen">
-      <div className="screen-header">
-        <h2>Trade Details</h2>
-        <p>Complete history of all your trades</p>
+      <div className="screen-header responsive-header">
+        <div className="header-title">
+          <div className="header-icon" onClick={onBack}>
+            <IoArrowBack size={24} color="#345c90" />
+          </div>
+          <h3>Analyse Trades</h3>
+        </div>
+        <div className="header-description">
+          <span>
+            Complete history of all your trades. Use the filters to analyse by trader, market, and
+            result.
+          </span>
+        </div>
+        <div className="trader-multiselect-group">
+          <TraderMultiSelect
+            users={users}
+            selectedUsers={selectedUsers}
+            setSelectedUsers={setSelectedUsers}
+            label="Trader Name"
+            placeholder="Select traders"
+          />
+        </div>
       </div>
 
       {loading ? (
@@ -148,15 +190,19 @@ const TradeDetails = () => {
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 700 }}>
               <TableBody>
-                {Array(5).fill(0).map((_, rowIndex) => (
-                  <StyledTableRow key={rowIndex}>
-                    {Array(11).fill(0).map((_, colIndex) => (
-                      <StyledTableCell key={colIndex}>
-                        <Skeleton height={20} />
-                      </StyledTableCell>
-                    ))}
-                  </StyledTableRow>
-                ))}
+                {Array(5)
+                  .fill(0)
+                  .map((_, rowIndex) => (
+                    <StyledTableRow key={rowIndex}>
+                      {Array(11)
+                        .fill(0)
+                        .map((_, colIndex) => (
+                          <StyledTableCell key={colIndex}>
+                            <Skeleton height={20} />
+                          </StyledTableCell>
+                        ))}
+                    </StyledTableRow>
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>
@@ -169,8 +215,8 @@ const TradeDetails = () => {
               <div className="chart-controls">
                 <div className="filter-group">
                   <label>Result:</label>
-                  <select 
-                    value={filter} 
+                  <select
+                    value={filter}
                     onChange={(e) => setFilter(e.target.value)}
                     className="filter-select"
                   >
@@ -181,8 +227,8 @@ const TradeDetails = () => {
                 </div>
                 <div className="filter-group">
                   <label>Market:</label>
-                  <select 
-                    value={marketFilter} 
+                  <select
+                    value={marketFilter}
                     onChange={(e) => setMarketFilter(e.target.value)}
                     className="filter-select"
                   >
@@ -200,7 +246,7 @@ const TradeDetails = () => {
                       onChange={(e) => setFromDate(e.target.value)}
                       className="filter-select"
                     />
-                     <label>To :</label>
+                    <label>To :</label>
                     <input
                       type="date"
                       value={toDate}
@@ -210,7 +256,10 @@ const TradeDetails = () => {
                     <button
                       type="button"
                       className="clear-filter-btn"
-                      onClick={() => { setFromDate(''); setToDate(''); }}
+                      onClick={() => {
+                        setFromDate('');
+                        setToDate('');
+                      }}
                     >
                       Clear
                     </button>
@@ -228,6 +277,7 @@ const TradeDetails = () => {
                 <Table sx={{ minWidth: 700 }} aria-label="customized table">
                   <TableHead>
                     <TableRow>
+                      <StyledTableCell>Trader Name</StyledTableCell>
                       <StyledTableCell>Market</StyledTableCell>
                       <StyledTableCell>Symbol</StyledTableCell>
                       <StyledTableCell>Type</StyledTableCell>
@@ -242,6 +292,16 @@ const TradeDetails = () => {
                     {currentTrades.map((trade) => (
                       <StyledTableRow key={trade.id}>
                         <StyledTableCell>
+                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontWeight: 600, color: '#345c90' }}>
+                              {trade.user_name}
+                            </span>
+                            <span style={{ fontSize: '0.8rem', color: '#666' }}>
+                              {trade.user_email}
+                            </span>
+                          </div>
+                        </StyledTableCell>
+                        <StyledTableCell>
                           <span className={`market-badge ${trade.market_type?.toLowerCase()}`}>
                             {trade.market_type}
                           </span>
@@ -249,10 +309,24 @@ const TradeDetails = () => {
                         <StyledTableCell>{trade.symbol}</StyledTableCell>
                         <StyledTableCell>{trade.trade_type}</StyledTableCell>
                         <StyledTableCell>{trade.lot_size}</StyledTableCell>
-                        <StyledTableCell>{trade.market_type === 'INDIAN' ? '₹' : '$'}{Number(trade.entry_price).toFixed(2)}</StyledTableCell>
-                        <StyledTableCell>{trade.market_type === 'INDIAN' ? '₹' : '$'}{trade.exit_price ? Number(trade.exit_price).toFixed(2) : 'N/A'}</StyledTableCell>
-                        <StyledTableCell className={Number(trade.profit_loss) >= 0 ? 'profit' : 'loss'}>
-                          {Number(trade.profit_loss) >= 0 ? '+' : ''}{trade.market_type === 'INDIAN' ? '₹' : '$'}{Number(trade.profit_loss).toFixed(2)}
+                        <StyledTableCell>
+                          {trade.market_type === 'INDIAN' ? '₹' : '$'}
+                          {Number(trade.entry_price).toFixed(2)}
+                        </StyledTableCell>
+                        <StyledTableCell>
+                          {trade.market_type === 'INDIAN' ? '₹' : '$'}
+                          {trade.exit_price ? Number(trade.exit_price).toFixed(2) : 'N/A'}
+                        </StyledTableCell>
+                        <StyledTableCell
+                          className={Number(trade.profit_loss) >= 0 ? 'profit' : 'loss'}
+                          style={{
+                            color: Number(trade.profit_loss) >= 0 ? '#2e7d32' : '#d32f2f',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {Number(trade.profit_loss) >= 0 ? '+' : ''}
+                          {trade.market_type === 'INDIAN' ? '₹' : '$'}
+                          {Number(trade.profit_loss).toFixed(2)}
                         </StyledTableCell>
                         <StyledTableCell>{formatDateDDMMYYYY(trade.trade_date)}</StyledTableCell>
                       </StyledTableRow>
@@ -263,18 +337,18 @@ const TradeDetails = () => {
             )}
 
             <Stack spacing={2} className="pagination">
-              <Pagination 
-                count={totalPages} 
-                page={currentPage} 
-                onChange={handlePageChange} 
-                shape="rounded" 
+              <Pagination
+                count={totalPages}
+                page={currentPage}
+                onChange={handlePageChange}
+                shape="rounded"
                 variant="outlined"
               />
             </Stack>
           </div>
         </>
       )}
-      
+
       <ErrorSnackbar
         open={snackbarOpen}
         message={snackbarMessage}
@@ -285,4 +359,4 @@ const TradeDetails = () => {
   );
 };
 
-export default TradeDetails;
+export default AnalyseTrades;

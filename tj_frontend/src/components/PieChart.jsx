@@ -30,10 +30,11 @@ const PieChart = ({ data, height = 300 }) => {
 
     if (total === 0) return;
 
-    // Center and radius
+    // Center and radius (reduce radius on narrow screens)
+    const isMobile = rect.width <= 480;
+    const radius = Math.min(width, chartHeight) / (isMobile ? 4 : 3);
     const centerX = width / 2;
     const centerY = chartHeight / 2;
-    const radius = Math.min(width, chartHeight) / 3;
 
     // Draw slices
     const colors = ['#27ae60', '#e74c3c'];
@@ -71,23 +72,38 @@ const PieChart = ({ data, height = 300 }) => {
       startAngle += sliceAngle;
     });
 
-    // Draw legend
-    const legendX = centerX + radius + 40;
-    let legendY = centerY - 30;
-    
-    labels.forEach((label, index) => {
-      // Color box
-      ctx.fillStyle = colors[index];
-      ctx.fillRect(legendX, legendY - 8, 15, 15);
-      
-      // Label text
-      ctx.fillStyle = '#2c3e50';
-      ctx.font = '12px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText(`${label}: ${values[index]} (${((values[index] / total) * 100).toFixed(1)}%)`, legendX + 20, legendY);
-      
-      legendY += 25;
-    });
+    // Draw legend (on mobile, place below chart centered)
+    if (isMobile) {
+      let legendY = centerY + radius + 16;
+      const boxX = centerX - 40;
+      labels.forEach((label, index) => {
+        ctx.fillStyle = colors[index];
+        ctx.fillRect(boxX, legendY - 8, 15, 15);
+
+        ctx.fillStyle = '#2c3e50';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(`${label}: ${values[index]} (${((values[index] / total) * 100).toFixed(1)}%)`, boxX + 20, legendY);
+
+        legendY += 22;
+      });
+    } else {
+      const legendX = centerX + radius + 40;
+      let legendY = centerY - 30;
+      labels.forEach((label, index) => {
+        // Color box
+        ctx.fillStyle = colors[index];
+        ctx.fillRect(legendX, legendY - 8, 15, 15);
+
+        // Label text
+        ctx.fillStyle = '#2c3e50';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(`${label}: ${values[index]} (${((values[index] / total) * 100).toFixed(1)}%)`, legendX + 20, legendY);
+
+        legendY += 25;
+      });
+    }
 
   }, [data, height]);
 

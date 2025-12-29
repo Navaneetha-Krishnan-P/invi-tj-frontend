@@ -27,8 +27,14 @@ export const AuthProvider = ({ children }) => {
 
   const initialUser = getInitialUser();
   const [user, setUser] = useState(initialUser);
+  const [roles, setRoles] = useState(() => {
+    if (!initialUser) return [];
+    const rt = initialUser.role_type ?? initialUser.roles ?? '';
+    if (Array.isArray(rt)) return rt.map(r => String(r).toUpperCase());
+    return String(rt).split(',').map(r => r.trim().toUpperCase()).filter(Boolean);
+  });
   const [loading] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(initialUser?.email === 'admin@trading.com');
+  const [isAdmin, setIsAdmin] = useState(roles.includes('ADMIN'));
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
 
   const checkAuth = () => {
@@ -47,15 +53,20 @@ export const AuthProvider = ({ children }) => {
       try {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
-        setIsAdmin(parsedUser.email === 'admin@trading.com');
+        const rt = parsedUser.role_type ?? parsedUser.roles ?? '';
+        const parsedRoles = Array.isArray(rt) ? rt.map(r => String(r).toUpperCase()) : String(rt).split(',').map(r => r.trim().toUpperCase()).filter(Boolean);
+        setRoles(parsedRoles);
+        setIsAdmin(parsedRoles.includes('ADMIN'));
       } catch (error) {
         console.error('Error parsing user data:', error);
         authService.logout();
         setUser(null);
+        setRoles([]);
         setIsAdmin(false);
       }
     } else {
       setUser(null);
+      setRoles([]);
       setIsAdmin(false);
     }
   };
@@ -63,8 +74,12 @@ export const AuthProvider = ({ children }) => {
   const signIn = async (email, password) => {
     const result = await authService.login(email, password);
     if (result.success && result.data) {
-      setUser(result.data.user);
-      setIsAdmin(result.data.user.email === 'admin@trading.com');
+      const u = result.data.user;
+      setUser(u);
+      const rt = u.role_type ?? u.roles ?? '';
+      const parsedRoles = Array.isArray(rt) ? rt.map(r => String(r).toUpperCase()) : String(rt).split(',').map(r => r.trim().toUpperCase()).filter(Boolean);
+      setRoles(parsedRoles);
+      setIsAdmin(parsedRoles.includes('ADMIN'));
       // Trigger welcome dialog
       setShowWelcomeDialog(true);
       return result.data;
@@ -83,6 +98,7 @@ export const AuthProvider = ({ children }) => {
   const signOut = async () => {
     authService.logout();
     setUser(null);
+    setRoles([]);
     setIsAdmin(false);
     setShowWelcomeDialog(false);
   };
@@ -97,7 +113,12 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    roles,
     isAdmin,
+    hasRole: (r) => {
+      if (!r) return false;
+      return roles.includes(String(r).toUpperCase());
+    },
     loading,
     signIn,
     signUp,

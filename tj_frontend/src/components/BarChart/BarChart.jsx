@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import './ProfitChart.css';
+import '../ProfitChart.css';
 
 const BarChart = ({ data, height = 300 }) => {
   const canvasRef = useRef(null);
@@ -7,18 +7,16 @@ const BarChart = ({ data, height = 300 }) => {
   useEffect(() => {
     if (!data || data.length === 0) return;
 
-    // Prepare padded data when there's a single point
+    // Prepare paddedData for single-point datasets
     let paddedData = data;
-    const desiredSlots = 7; // 3 before, item, 3 after
+    const desiredSlots = 7;
     if (data.length === 1) {
       const base = data[0];
       const center = Math.floor(desiredSlots / 2);
       paddedData = new Array(desiredSlots).fill(null);
       paddedData[center] = { ...base, _empty: false };
-
       const baseDate = new Date(base.period);
       const hasValidDate = !isNaN(baseDate.getTime());
-
       for (let i = 0; i < desiredSlots; i++) {
         if (!paddedData[i]) {
           let label = '';
@@ -66,19 +64,17 @@ const BarChart = ({ data, height = 300 }) => {
 
       const width = rect.width;
       const chartHeight = rect.height;
-
       ctx.clearRect(0, 0, width, chartHeight);
 
       const chartWidth = width - padding.left - padding.right;
       const innerHeight = chartHeight - padding.top - padding.bottom;
 
-      // Find min and max values
       const profits = paddedData.map(d => parseFloat(d.totalProfit || 0));
       const maxProfit = Math.max(...profits, 0);
       const minProfit = Math.min(...profits, 0);
       const range = Math.max(Math.abs(maxProfit), Math.abs(minProfit)) || 1;
 
-      // Grid lines
+      // Grid
       ctx.strokeStyle = '#e1e8ed';
       ctx.lineWidth = 1;
       for (let i = 0; i <= 5; i++) {
@@ -107,9 +103,8 @@ const BarChart = ({ data, height = 300 }) => {
       const barWidth = (chartWidth / paddedData.length) * 0.7;
       const barGap = (chartWidth / paddedData.length) * 0.3;
 
-      // Determine label density and rotation thresholds based on available per-bar space
       const availablePerBar = chartWidth / paddedData.length;
-      const approxLabelWidth = 40; // aim for narrower label footprint
+      const approxLabelWidth = 40;
       const maxLabels = Math.max(1, Math.floor(chartWidth / approxLabelWidth));
       const labelInterval = Math.max(1, Math.ceil(paddedData.length / maxLabels));
 
@@ -133,17 +128,15 @@ const BarChart = ({ data, height = 300 }) => {
           ctx.fillRect(x, y, barWidth, barHeight);
         }
 
-        // Only draw subset of labels to avoid collision
         if (index % labelInterval !== 0 && index !== paddedData.length - 1) return;
 
         const rawLabel = point.period || '';
         const labelText = formatLabel(rawLabel);
         ctx.fillStyle = '#7f8c8d';
 
-        // Choose rotation and font based on available space
         let rotateAngle = 0;
-        if (availablePerBar < 50) rotateAngle = -Math.PI / 2; // fully vertical earlier on mobile
-        else if (availablePerBar < 90) rotateAngle = -Math.PI / 4; // diagonal
+        if (availablePerBar < 50) rotateAngle = -Math.PI / 2;
+        else if (availablePerBar < 90) rotateAngle = -Math.PI / 4;
 
         if (availablePerBar < 40) ctx.font = '9px Arial';
         else if (availablePerBar < 70) ctx.font = '10px Arial';
@@ -161,10 +154,7 @@ const BarChart = ({ data, height = 300 }) => {
       });
     };
 
-    // Initial draw
     draw();
-
-    // Redraw on resize with debounce
     const onResize = () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => draw(), 120);
@@ -175,6 +165,7 @@ const BarChart = ({ data, height = 300 }) => {
       window.removeEventListener('resize', onResize);
       if (resizeTimer) clearTimeout(resizeTimer);
     };
+
   }, [data, height]);
 
   if (!data || data.length === 0) {

@@ -1,29 +1,29 @@
-import { useState } from "react";
+import { useState } from 'react';
 import { tradeAPI } from '../../services/api';
-import ErrorSnackbar from "../../components/ErrorSnackbar";
+import ErrorSnackbar from '../../components/ErrorSnackbar';
 import StyledTextField from '../../components/StyledTextField';
-import "./IndianMarket.css";
-import { FaEdit } from "react-icons/fa";
-import { CgCloseR } from "react-icons/cg";
+import './IndianMarket.css';
+import { FaEdit } from 'react-icons/fa';
+import { CgCloseR } from 'react-icons/cg';
 import { MenuItem, Button, Card, CardContent, IconButton, Typography } from '@mui/material';
 
 const IndianMarket = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("error");
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('error');
   const [trades, setTrades] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
 
   // Form fields for manual trade entry
   const [formData, setFormData] = useState({
-    symbol: "",
-    trade_type: "",
-    lot_size: "",
-    entry_price: "",
-    exit_price: "",
-    trade_date: "",
-    profit_loss: "",
+    symbol: '',
+    trade_type: '',
+    lot_size: '',
+    entry_price: '',
+    exit_price: '',
+    trade_date: '',
+    profit_loss: '',
   });
 
   const handleInputChange = (e) => {
@@ -36,19 +36,19 @@ const IndianMarket = () => {
 
   const handleAddTrade = (e) => {
     e.preventDefault();
-    setSnackbarMessage("");
+    setSnackbarMessage('');
     setSnackbarOpen(false);
 
     const trade = {
-      user_id: localStorage.getItem("userId"),
-      market_type: "INDIAN",
+      user_id: localStorage.getItem('userId'),
+      market_type: 'INDIAN',
       symbol: formData.symbol.toUpperCase(),
       trade_type: formData.trade_type,
       lot_size: parseInt(formData.lot_size) || 1,
       entry_price: parseFloat(formData.entry_price) || 0,
       exit_price: formData.exit_price ? parseFloat(formData.exit_price) : null,
       profit_loss: parseFloat(formData.profit_loss) || 0,
-      trade_date: formData.trade_date || new Date().toISOString(),
+      trade_date: formData.trade_date || new Date().toISOString().split('T')[0],
     };
 
     if (editingIndex !== null) {
@@ -58,7 +58,7 @@ const IndianMarket = () => {
       setTrades(updatedTrades);
       const successMsg = `Trade updated! Total trades: ${trades.length}`;
       setSnackbarMessage(successMsg);
-      setSnackbarSeverity("success");
+      setSnackbarSeverity('success');
       setSnackbarOpen(true);
       setEditingIndex(null);
     } else {
@@ -66,31 +66,33 @@ const IndianMarket = () => {
       setTrades([...trades, trade]);
       const successMsg = `Trade added! Total trades: ${trades.length + 1}`;
       setSnackbarMessage(successMsg);
-      setSnackbarSeverity("success");
+      setSnackbarSeverity('success');
       setSnackbarOpen(true);
     }
 
     // Reset form
     setFormData({
-      symbol: "",
-      trade_type: "BUY",
-      lot_size: "",
-      entry_price: "",
-      exit_price: "",
-      trade_date: "",
-      profit_loss: "",
+      symbol: '',
+      trade_type: 'BUY',
+      lot_size: '',
+      entry_price: '',
+      exit_price: '',
+      trade_date: '',
+      profit_loss: '',
     });
   };
 
   const handleEditTrade = (index) => {
     const trade = trades[index];
+    const isoDate = trade.trade_date ? trade.trade_date.split('T')[0] : '';
+
     setFormData({
       symbol: trade.symbol,
       trade_type: trade.trade_type,
       lot_size: trade.lot_size.toString(),
       entry_price: trade.entry_price.toString(),
-      exit_price: trade.exit_price ? trade.exit_price.toString() : "",
-      trade_date: trade.trade_date ? trade.trade_date.split("T")[0] : "",
+      exit_price: trade.exit_price ? trade.exit_price.toString() : '',
+      trade_date: isoDate,
       profit_loss: trade.profit_loss.toString(),
     });
     setEditingIndex(index);
@@ -99,21 +101,21 @@ const IndianMarket = () => {
   const handleCancelEdit = () => {
     setEditingIndex(null);
     setFormData({
-      symbol: "",
-      trade_type: "BUY",
-      lot_size: "",
-      entry_price: "",
-      exit_price: "",
-      trade_date: "",
-      profit_loss: "",
+      symbol: '',
+      trade_type: 'BUY',
+      lot_size: '',
+      entry_price: '',
+      exit_price: '',
+      trade_date: '',
+      profit_loss: '',
     });
   };
 
   const handleSaveAllTrades = async () => {
     if (trades.length === 0) {
-      const errorMsg = "No trades to save. Please add at least one trade.";
+      const errorMsg = 'No trades to save. Please add at least one trade.';
       setSnackbarMessage(errorMsg);
-      setSnackbarSeverity("error");
+      setSnackbarSeverity('error');
       setSnackbarOpen(true);
       return;
     }
@@ -126,20 +128,20 @@ const IndianMarket = () => {
       if (data.success) {
         const successMsg = `Successfully saved ${trades.length} trade(s)!`;
         setSnackbarMessage(successMsg);
-        setSnackbarSeverity("success");
+        setSnackbarSeverity('success');
         setSnackbarOpen(true);
         setTrades([]);
       } else {
-        const errorMsg = data.error || "Failed to save trades";
+        const errorMsg = data.error || 'Failed to save trades';
         setSnackbarMessage(errorMsg);
-        setSnackbarSeverity("error");
+        setSnackbarSeverity('error');
         setSnackbarOpen(true);
       }
     } catch (err) {
       console.error('Save trades error:', err);
-      const errorMsg = "Oops! Something went wrong";
+      const errorMsg = 'Oops! Something went wrong';
       setSnackbarMessage(errorMsg);
-      setSnackbarSeverity("error");
+      setSnackbarSeverity('error');
       setSnackbarOpen(true);
     } finally {
       setIsProcessing(false);
@@ -155,7 +157,7 @@ const IndianMarket = () => {
     }
     const successMsg = `Trade removed. Total trades: ${trades.length - 1}`;
     setSnackbarMessage(successMsg);
-    setSnackbarSeverity("success");
+    setSnackbarSeverity('success');
     setSnackbarOpen(true);
   };
 
@@ -169,14 +171,10 @@ const IndianMarket = () => {
       <div className="trade-entry-container">
         {/* Manual Trade Entry Form */}
         <div className="manual-entry-section">
-          <h3>{editingIndex !== null ? "Edit Trade" : "Add Trade"}</h3><br/>
+          <h3>{editingIndex !== null ? 'Edit Trade' : 'Add Trade'}</h3>
+          <br />
           {editingIndex !== null && (
-            <Button 
-              variant="outlined" 
-              color="error" 
-              onClick={handleCancelEdit}
-              sx={{ mb: 4 }}
-            >
+            <Button variant="outlined" color="error" onClick={handleCancelEdit} sx={{ mb: 4 }}>
               Cancel Edit
             </Button>
           )}
@@ -212,7 +210,7 @@ const IndianMarket = () => {
                 value={formData.entry_price}
                 onChange={handleInputChange}
                 placeholder="2450.00"
-                inputProps={{ step: "0.01" }}
+                inputProps={{ step: '0.01' }}
                 required
               />
 
@@ -223,7 +221,7 @@ const IndianMarket = () => {
                 value={formData.exit_price}
                 onChange={handleInputChange}
                 placeholder="2475.00"
-                inputProps={{ step: "0.01" }}
+                inputProps={{ step: '0.01' }}
                 required
               />
             </div>
@@ -236,7 +234,7 @@ const IndianMarket = () => {
                 value={formData.lot_size}
                 onChange={handleInputChange}
                 placeholder="1"
-                inputProps={{ step: "1" }}
+                inputProps={{ step: '1' }}
                 required
               />
 
@@ -247,7 +245,7 @@ const IndianMarket = () => {
                 value={formData.profit_loss}
                 onChange={handleInputChange}
                 placeholder="2500.00"
-                inputProps={{ step: "0.01" }}
+                inputProps={{ step: '0.01' }}
                 required
               />
             </div>
@@ -256,39 +254,33 @@ const IndianMarket = () => {
               <StyledTextField
                 label="Date"
                 name="trade_date"
-                type="datetime-local"
-                value={
-                  formData.trade_date ? formData.trade_date.slice(0, 16) : ""
-                }
+                type="date"
+                value={formData.trade_date}
                 onChange={handleInputChange}
                 required
                 InputLabelProps={{ shrink: true }}
               />
             </div>
 
-            <div style={{marginBottom: "10px"}}>
-              <Button 
-                type="submit" 
+            <div style={{ marginBottom: '10px' }}>
+              <Button
+                type="submit"
                 variant="contained"
                 fullWidth
                 sx={{ mb: 1, backgroundColor: '#345c90' }}
               >
-                {editingIndex !== null
-                  ? "Update Trade"
-                  : "Add Trade"}
+                {editingIndex !== null ? 'Update Trade' : 'Add Trade'}
               </Button>
             </div>
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               variant="contained"
               color="success"
               fullWidth
               onClick={handleSaveAllTrades}
               disabled={isProcessing || trades.length === 0}
             >
-              {isProcessing
-                ? "Saving..."
-                : `Save All Trades (${trades.length})`}
+              {isProcessing ? 'Saving...' : `Save All Trades (${trades.length})`}
             </Button>
           </form>
         </div>
@@ -298,66 +290,101 @@ const IndianMarket = () => {
           <h3>Trades to be Saved ({trades.length})</h3>
           {trades.length === 0 ? (
             <div className="empty-trades-message">
-              <p>
-                No trades added yet. Fill the form and click "Add Trade".
-              </p>
+              <p>No trades added yet. Fill the form and click "Add Trade".</p>
             </div>
           ) : (
             <div className="trades-preview-list">
               {trades.map((trade, index) => (
-                <Card 
-                  key={index} 
-                  sx={{ 
-                    mb: 1.5, 
+                <Card
+                  key={index}
+                  sx={{
+                    mb: 1.5,
                     border: editingIndex === index ? '2px solid #1976d2' : '1px solid #e1e8ed',
-                    backgroundColor :'rgb(237, 243, 255)',
-                    boxShadow: 'none'
+                    backgroundColor: 'rgb(237, 243, 255)',
+                    boxShadow: 'none',
                   }}
                 >
                   <CardContent sx={{ p: 1.2, '&:last-child': { pb: 1.2 } }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '12px',
+                      }}
+                    >
                       <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                          <Typography variant="subtitle1" component="span" color="primary" sx={{ fontWeight: 600 }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            marginBottom: '4px',
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle1"
+                            component="span"
+                            color="primary"
+                            sx={{ fontWeight: 600 }}
+                          >
                             #{index + 1}
                           </Typography>
                           <Typography variant="body2" fontWeight="600">
                             {trade.symbol} - {trade.trade_type}
                           </Typography>
                         </div>
-                        <div style={{ display: 'flex', gap: '16px', rowGap: '5px', flexWrap: 'wrap' }}>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                        <div
+                          style={{ display: 'flex', gap: '16px', rowGap: '5px', flexWrap: 'wrap' }}
+                        >
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ fontSize: '0.8rem' }}
+                          >
                             Lot: {trade.lot_size}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ fontSize: '0.8rem' }}
+                          >
                             Entry: ₹{trade.entry_price}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
-                            Exit: ₹{trade.exit_price || "N/A"}
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ fontSize: '0.8rem' }}
+                          >
+                            Exit: ₹{trade.exit_price || 'N/A'}
                           </Typography>
-                          <Typography 
-                            variant="body2" 
-                            sx={{ 
+                          <Typography
+                            variant="body2"
+                            sx={{
                               color: trade.profit_loss >= 0 ? '#27ae60' : '#e74c3c',
                               fontWeight: 'bold',
-                              fontSize: '0.85rem'
+                              fontSize: '0.85rem',
                             }}
                           >
                             P/L: ₹{trade.profit_loss.toFixed(2)}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                            {new Date(trade.trade_date).toLocaleString('en-US', { 
-                              month: 'short', 
-                              day: 'numeric', 
-                              year: 'numeric', 
-                              hour: '2-digit', 
-                              minute: '2-digit'
-                            })}
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ fontSize: '0.75rem' }}
+                          >
+                            {(() => {
+                              const date = new Date(trade.trade_date);
+                              const day = String(date.getDate()).padStart(2, '0');
+                              const month = String(date.getMonth() + 1).padStart(2, '0');
+                              const year = date.getFullYear();
+                              return `${day}-${month}-${year}`;
+                            })()}
                           </Typography>
                         </div>
                       </div>
                       <div>
-                        <IconButton 
+                        <IconButton
                           size="small"
                           color="primary"
                           onClick={() => handleEditTrade(index)}
@@ -365,10 +392,10 @@ const IndianMarket = () => {
                         >
                           <FaEdit />
                         </IconButton>
-                        <IconButton 
+                        <IconButton
                           size="small"
                           color="error"
-                          style={{marginTop : "2px"}}
+                          style={{ marginTop: '2px' }}
                           onClick={() => handleRemoveTrade(index)}
                           title="Remove trade"
                         >

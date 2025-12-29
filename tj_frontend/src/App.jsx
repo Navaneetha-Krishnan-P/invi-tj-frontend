@@ -1,13 +1,13 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import Layout from './components/Layout/Layout';
+import Layout from './components/Layout/Layout/Layout';
 import Login from './screens/Login/Login';
 import Dashboard from './screens/Dashboard/Dashboard';
 import ForexMarket from './screens/ForexMarket/ForexMarket';
 import IndianMarket from './screens/IndianMarket/IndianMarket';
 import TradeDetails from './screens/TradeDetails/TradeDetails';
-import Admin from './screens/Admin/Admin';
+import Admin from './screens/Admin';
 import './App.css';
 
 function App() {
