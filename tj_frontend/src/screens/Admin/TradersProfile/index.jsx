@@ -321,8 +321,6 @@ const TradersProfile = ({ onBack }) => {
                   >
                     <option value="TRADER">Trader</option>
                     <option value="ADMIN">Admin</option>
-                    <option value="MANAGER">Manager</option>
-                    <option value="VIEWER">Viewer</option>
                   </select>
                 </div>
 

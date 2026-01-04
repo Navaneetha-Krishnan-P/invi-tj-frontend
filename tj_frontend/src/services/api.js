@@ -85,13 +85,32 @@ export const dashboardAPI = {
 
 // Trade APIs
 export const tradeAPI = {
-  saveTrades: async (trades) => {
+  saveTrades: async (payload) => {
     const response = await fetch(`${API_BASE_URL}${ENDPOINTS.TRADES_SAVE}`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ trades }),
+      body: JSON.stringify(payload),
     });
     if (!response.ok) throw new Error('Failed to save trades');
+    return response.json();
+  },
+
+  checkNTConflict: async (dates, marketType) => {
+    const response = await fetch(`${API_BASE_URL}/trades/check-nt`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ dates, marketType }),
+    });
+    if (!response.ok) throw new Error('Failed to check NT conflict');
+    return response.json();
+  },
+
+  deleteNTEntry: async (date, marketType) => {
+    const response = await fetch(`${API_BASE_URL}/trades/delete-nt/${date}?marketType=${marketType}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Failed to delete NT entry');
     return response.json();
   },
 
@@ -188,6 +207,19 @@ export const adminAPI = {
       headers: getAuthHeaders(),
     });
     if (!response.ok) throw new Error('Failed to fetch trades');
+    return response.json();
+  },
+
+  getAllJournals: async (userIds = null) => {
+    let url = `${ADMIN_API_URL}/journals/all`;
+    if (userIds && userIds.length > 0) {
+      url += `?userId=${userIds.join(',')}`;
+    }
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) throw new Error('Failed to fetch journals');
     return response.json();
   },
 

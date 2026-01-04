@@ -181,7 +181,7 @@
 .market-badge {
   display: inline-block;
   padding: 4px 10px;
-  border-radius: 12px;
+  border-radius: 4px !important;
   font-size: 11px;
   font-weight: 700;
 }
@@ -196,9 +196,28 @@
   color: #f57c00;
 }
 
+.market-badge.trade {
+  background: #d4edda;
+  color: #155724;
+}
+
+.market-badge.nt {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.journal-text-cell {
+  max-width: 500px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap !important;
+  height: 50px !important;
+  max-height: 50px !important;
+}
+
 .trade-type {
   padding: 4px 12px;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 12px;
   font-weight: 700;
 }
@@ -612,5 +631,217 @@
     align-self: flex-start;
     margin-top: 12px;
     margin-left: 0;
+  }
+}
+
+/* Mobile Table Optimizations */
+@media (max-width: 768px) {
+  .trade-details-screen {
+    padding: 0 8px;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .screen-header h2 {
+    font-size: 18px;
+  }
+
+  .screen-header p {
+    font-size: 13px;
+  }
+
+  /* Make table container scrollable without extra space */
+  .MuiTableContainer-root {
+    overflow-x: auto !important;
+    margin: 0 -8px;
+    width: calc(100% + 16px);
+    border-radius: 0 !important;
+  }
+
+  /* Reduce table font sizes and padding */
+  .MuiTableCell-root {
+    padding: 8px 6px !important;
+    font-size: 11px !important;
+    white-space: nowrap;
+  }
+
+  /* Add left padding to first column */
+  .MuiTableCell-root:first-child {
+    padding-left: 12px !important;
+  }
+
+  .MuiTableCell-head {
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    padding: 10px 6px !important;
+    white-space: nowrap;
+  }
+
+  .MuiTableCell-head:first-child {
+    padding-left: 12px !important;
+  }
+
+  /* Compact badges */
+  .market-badge {
+    padding: 3px 6px;
+    font-size: 9px;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+
+  /* Reduce journal text cell width */
+  .journal-text-cell {
+    max-width: 150px !important;
+    font-size: 10px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    word-break: normal !important;
+  }
+
+  /* Compact action buttons */
+  .MuiIconButton-root {
+    padding: 4px !important;
+  }
+
+  .MuiIconButton-root svg {
+    font-size: 16px !important;
+  }
+
+  /* Reduce pagination size */
+  .pagination {
+    margin-top: 16px;
+  }
+
+  .pagination .MuiPagination-root {
+    font-size: 12px;
+  }
+
+  .pagination .MuiPaginationItem-root {
+    min-width: 26px;
+    height: 26px;
+    font-size: 11px;
+    margin: 0 2px;
+  }
+
+  /* Make toggle buttons smaller */
+  .MuiToggleButton-root {
+    padding: 6px 12px !important;
+    font-size: 11px !important;
+  }
+
+  /* Compact chart header */
+  .chart-header h2 {
+    font-size: 16px;
+  }
+
+  .chart-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start !important;
+  }
+
+  .chart-controls {
+    width: 100%;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  /* Empty state spacing */
+  .empty-state {
+    padding: 30px 15px;
+  }
+
+  .empty-state p {
+    font-size: 13px;
+  }
+
+  /* Fix sticky Actions column on mobile */
+  .MuiTableCell-root[style*="position: sticky"],
+  .MuiTableCell-root[style*="position:sticky"] {
+    position: sticky !important;
+    right: 0 !important;
+    z-index: 2 !important;
+    box-shadow: -2px 0 4px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Ensure proper table layout on mobile */
+  .MuiTable-root {
+    min-width: 600px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screens - more aggressive optimization */
+  .trade-details-screen {
+    padding: 0 4px;
+  }
+
+  .MuiTableContainer-root {
+    margin: 0 -4px;
+    width: calc(100% + 8px);
+  }
+
+  .MuiTableCell-root {
+    padding: 6px 4px !important;
+    font-size: 10px !important;
+  }
+
+  .MuiTableCell-root:first-child {
+    padding-left: 10px !important;
+  }
+
+  .MuiTableCell-head {
+    font-size: 9px !important;
+    padding: 8px 4px !important;
+  }
+
+  .MuiTableCell-head:first-child {
+    padding-left: 10px !important;
+  }
+
+  .market-badge {
+    padding: 2px 4px;
+    font-size: 8px;
+  }
+
+  .journal-text-cell {
+    max-width: 100px !important;
+    font-size: 9px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* Stack filters vertically */
+  .chart-controls {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  /* Further reduce toggle button size */
+  .MuiToggleButton-root {
+    padding: 5px 10px !important;
+    font-size: 10px !important;
+  }
+
+  /* Compact pagination */
+  .pagination .MuiPaginationItem-root {
+    min-width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
+
+  /* Smaller table min-width for very small screens */
+  .MuiTable-root {
+    min-width: 500px;
   }
 }
