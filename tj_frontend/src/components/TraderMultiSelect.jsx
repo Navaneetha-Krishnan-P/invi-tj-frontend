@@ -23,7 +23,7 @@ const TraderMultiSelect = ({ users, selectedUsers, setSelectedUsers, label = 'Tr
       id="multiple-limit-tags"
       disablePortal
       options={users}
-      getOptionLabel={(option) => option.name}
+      getOptionLabel={(option) => `${option.name} (${option.user_id})`}
       value={selectedUsers}
       onChange={(event, newValue) => {
         setSelectedUsers(newValue);

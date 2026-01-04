@@ -619,3 +619,45 @@
     font-size: 13px;
   }
 }
+
+/* Trading Journal Section */
+.trading-journal-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid #e1e8ed;
+}
+
+.trading-journal-section h3 {
+  font-size: 18px;
+  color: #345c90;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.journal-hint {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.trading-journal-textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 150px;
+  transition: border-color 0.2s;
+}
+
+.trading-journal-textarea:focus {
+  outline: none;
+  border-color: #345c90;
+}
+
+.trading-journal-textarea::placeholder {
+  color: #999;
+}
